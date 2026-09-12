@@ -24,6 +24,7 @@ try {
         FRLG_HELD_PROFILE_FIRE_RED_ENGLISH_SWEET_SCENT,
         FRLG_HELD_SEARCH_MODE_ALL_METHODS,
         FRLG_HELD_SEARCH_MODE_FIVE_TRACKS,
+        FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC,
         FRLG_HELD_SEARCH_MODE_FOUR_TRACKS,
         FRLG_HELD_SEARCH_MODE_H1_STABLE,
         HELD_ITEM_FILTER_ANY_ITEM,
@@ -143,6 +144,13 @@ try {
             FRLG_HELD_SEARCH_MODE_FIVE_TRACKS
         ),
         [165, 166, 167, 168, 169]
+    );
+    assert.deepEqual(
+        getFrlgHeldSearchOffsets(
+            166,
+            FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC
+        ),
+        [164, 165, 166, 167, 168]
     );
     assert.deepEqual(
         getFrlgHeldSearchOffsets(

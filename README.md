@@ -102,7 +102,7 @@ This fork reduces that problem by letting Searcher pre-filter targets using an a
 - The tab only offers Pokémon that actually have a held item in FireRed/LeafGreen; all of their grass/cave locations remain selectable
 - It scans a 16-bit initial seed forward over a selected Advance range (up to 100,000 per search); TID, SID, and IV filters are not required
 - Known locations automatically fill the field-tested H1 standard Offset; unknown locations use `0` and require a manual Offset before searching
-- **H1 stable** checks `O` and `O+1`; **H1/H2/H4 coverage** checks `O-1`, `O`, and `O+1`; **four-track coverage** adds `O+2`; **five-track coverage** adds `O+3`
+- **H1 stable** checks `O` and `O+1`; **H1/H2/H4 coverage** checks `O-1`, `O`, and `O+1`; **four-track coverage** adds `O+2`; the two five-track modes cover `O-1` through `O+3` and `O-2` through `O+2`
 - Shiny + frame range mode searches the entire seed library and filters only by shiny status and Advance range; coverage mode only controls the held-item tracks displayed in its results
 - Results show every checked Offset, roll, and predicted item
 

@@ -476,6 +476,8 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
                 "Four-track coverage: O-1 / O / O+1 / O+2",
             searchModeFiveTracks:
                 "Five-track coverage: O-1 / O / O+1 / O+2 / O+3",
+            searchModeFiveTracksSymmetric:
+                "Five-track symmetric: O-2 / O-1 / O / O+1 / O+2",
             searchModeH1StableHelp:
                 "Uses the standard H1 offset O and its possible +1 path O+1. During held-item filtering, both tracks must match the selected item.",
             searchModeAllMethodsHelp:
@@ -484,6 +486,8 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
                 "Uses O-1, O, O+1, and O+2 for wider adjacent-path coverage. During held-item filtering, all four tracks must match.",
             searchModeFiveTracksHelp:
                 "Uses O-1, O, O+1, O+2, and O+3 for the widest adjacent-path coverage. During held-item filtering, all five tracks must match.",
+            searchModeFiveTracksSymmetricHelp:
+                "Uses O-2, O-1, O, O+1, and O+2 for symmetric adjacent-path coverage. During held-item filtering, all five tracks must match.",
             searchModeShinyHelp:
                 "In shiny + frame range mode, this selection controls the held-item tracks shown in results but does not filter any result.",
             standardOffset: "H1 standard Offset (O)",
@@ -1018,6 +1022,8 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
                 "\u56db\u8f68\u5e7f\u8986\u76d6\uff1aO-1 / O / O+1 / O+2",
             searchModeFiveTracks:
                 "\u4e94\u8f68\u5e7f\u8986\u76d6\uff1aO-1 / O / O+1 / O+2 / O+3",
+            searchModeFiveTracksSymmetric:
+                "\u4e94\u8f68\u5bf9\u79f0\u8986\u76d6\uff1aO-2 / O-1 / O / O+1 / O+2",
             searchModeH1StableHelp:
                 "\u4f7f\u7528 H1 \u6807\u51c6 O \u4e0e\u53ef\u80fd\u7684 +1 \u8f68\u8ff9 O+1\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u4e24\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u6240\u9009\u9053\u5177\u3002",
             searchModeAllMethodsHelp:
@@ -1026,6 +1032,8 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
                 "\u4f7f\u7528 O-1\u3001O\u3001O+1\u3001O+2 \u6269\u5927\u76f8\u90bb\u8f68\u8ff9\u8986\u76d6\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u56db\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u3002",
             searchModeFiveTracksHelp:
                 "\u4f7f\u7528 O-1\u3001O\u3001O+1\u3001O+2\u3001O+3 \u6269\u5927\u76f8\u90bb\u8f68\u8ff9\u8986\u76d6\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u4e94\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u3002",
+            searchModeFiveTracksSymmetricHelp:
+                "\u4f7f\u7528 O-2\u3001O-1\u3001O\u3001O+1\u3001O+2 \u8fdb\u884c\u5bf9\u79f0\u7684\u76f8\u90bb\u8f68\u8ff9\u8986\u76d6\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u4e94\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u3002",
             searchModeShinyHelp:
                 "\u5728\u95ea\u5149 + \u5e27\u6570\u8303\u56f4\u6a21\u5f0f\u4e0b\uff0c\u8be5\u9009\u62e9\u53ea\u63a7\u5236\u7ed3\u679c\u4e2d\u663e\u793a\u7684\u643a\u5e26\u7269\u8f68\u8ff9\uff0c\u4e0d\u7b5b\u6389\u4efb\u4f55\u7ed3\u679c\u3002",
             standardOffset: "H1 \u6807\u51c6 Offset\uff08O\uff09",

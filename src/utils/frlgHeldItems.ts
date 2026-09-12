@@ -37,13 +37,16 @@ export const FRLG_HELD_SEARCH_MODE_H1_STABLE = "h1-stable";
 export const FRLG_HELD_SEARCH_MODE_ALL_METHODS = "all-methods";
 export const FRLG_HELD_SEARCH_MODE_FOUR_TRACKS = "four-tracks";
 export const FRLG_HELD_SEARCH_MODE_FIVE_TRACKS = "five-tracks";
+export const FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC =
+    "five-tracks-symmetric";
 const FRLG_MAX_NATIONAL_DEX_SPECIES = 386;
 
 export type FrlgHeldSearchMode =
     | typeof FRLG_HELD_SEARCH_MODE_H1_STABLE
     | typeof FRLG_HELD_SEARCH_MODE_ALL_METHODS
     | typeof FRLG_HELD_SEARCH_MODE_FOUR_TRACKS
-    | typeof FRLG_HELD_SEARCH_MODE_FIVE_TRACKS;
+    | typeof FRLG_HELD_SEARCH_MODE_FIVE_TRACKS
+    | typeof FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC;
 
 export type FrlgHeldItemSlots = {
     common: number;
@@ -402,6 +405,17 @@ export function getFrlgHeldSearchOffsets(
 ): number[] {
     if (!Number.isInteger(h1StandardOffset) || h1StandardOffset <= 0) {
         return [];
+    }
+    if (searchMode === FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC) {
+        return h1StandardOffset < 2
+            ? []
+            : [
+                  h1StandardOffset - 2,
+                  h1StandardOffset - 1,
+                  h1StandardOffset,
+                  h1StandardOffset + 1,
+                  h1StandardOffset + 2,
+              ];
     }
     if (searchMode === FRLG_HELD_SEARCH_MODE_FIVE_TRACKS) {
         return [

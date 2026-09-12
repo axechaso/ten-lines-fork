@@ -40,6 +40,7 @@ import {
     FRLG_HELD_PROFILE_ENGLISH_SWITCH,
     FRLG_HELD_SEARCH_MODE_ALL_METHODS,
     FRLG_HELD_SEARCH_MODE_FIVE_TRACKS,
+    FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC,
     FRLG_HELD_SEARCH_MODE_FOUR_TRACKS,
     FRLG_HELD_SEARCH_MODE_H1_STABLE,
     HELD_ITEM_FILTER_ANY,
@@ -95,6 +96,11 @@ const SEARCH_MODE_OPTIONS: {
         value: FRLG_HELD_SEARCH_MODE_FIVE_TRACKS,
         labelKey: "heldItems.searchModeFiveTracks",
         helpKey: "heldItems.searchModeFiveTracksHelp",
+    },
+    {
+        value: FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC,
+        labelKey: "heldItems.searchModeFiveTracksSymmetric",
+        helpKey: "heldItems.searchModeFiveTracksSymmetricHelp",
     },
 ];
 const ENCOUNTER_CATEGORY_OPTIONS = [
