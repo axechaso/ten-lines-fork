@@ -12,7 +12,7 @@ import { memo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useI18n } from "../i18n";
 import { frameToMS, hexSeed, teachyTVConversion } from "../tenLines";
-import type { InitialSeedResult } from "../tenLines/generated";
+import type { InitialSeedResult } from "../tenLines/generated.d";
 import { setLocalStorageValue } from "../hooks/useLocalStorage";
 import {
     COMPARE_TARGET_STORAGE_KEY,
@@ -138,6 +138,10 @@ const InitialSeedTable = memo(function InitialSeedTable({
         setSearchParams((previous) => {
             const params = new URLSearchParams(previous);
             params.set("targetInitialSeed", hexSeed(row.initialSeed, 16));
+            params.set(
+                "calibrationTransfer",
+                `${row.initialSeed}-${row.advances}-${Date.now()}`
+            );
             if (isTeachyTVMode) {
                 const ttv = teachyTVConversion(row.advances, teachyTVRegularOut);
                 params.set(

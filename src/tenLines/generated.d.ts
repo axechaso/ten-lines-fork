@@ -5,7 +5,6 @@ export interface FRLGContiguousSeedEntry {
     settings?: string;
     [key: string]: any;
 }
-
 export interface IVRange {
     min: number;
     max: number;
@@ -128,6 +127,7 @@ export interface StatsOcrResult {
 export interface MainModule {
     check_seeds_static: (...args: any[]) => any;
     check_seeds_wild: (...args: any[]) => any;
+    check_seeds_wild_limited: (...args: any[]) => any;
     check_seeds_frlg_egg: (...args: any[]) => any;
     calc_ivs_static: (...args: any[]) => IVRange[] | Promise<IVRange[]>;
     calc_ivs_generic: (...args: any[]) => IVRange[] | Promise<IVRange[]>;
@@ -149,6 +149,3 @@ export interface MainModule {
         height: number
     ) => StatsOcrResult | Promise<StatsOcrResult>;
 }
-
-declare const MainModuleFactory: () => Promise<MainModule>;
-export default MainModuleFactory;

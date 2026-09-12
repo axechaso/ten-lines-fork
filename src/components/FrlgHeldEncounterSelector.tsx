@@ -5,8 +5,6 @@ import { getLocation, getName, useI18n } from "../i18n";
 import fetchTenLines from "../tenLines";
 import { getFrlgHeldItemSlots } from "../utils/frlgHeldItems";
 
-const FRLG_GRASS_ENCOUNTER_CATEGORY = 0;
-
 export type FrlgHeldLocationOption = {
     /** Index into get_wild_locations(); required by the encounter APIs. */
     locationIndex: number;
@@ -24,6 +22,7 @@ export type FrlgHeldEncounterSelectorProps = {
     /** Inputs are disabled without restarting the resource lifecycle. */
     disabled?: boolean;
     game: number;
+    encounterCategory: number;
     value?: FrlgHeldEncounterSelection;
     onChange: (selection: FrlgHeldEncounterSelection | undefined) => void;
 };
@@ -44,6 +43,7 @@ export default function FrlgHeldEncounterSelector({
     active,
     disabled = false,
     game,
+    encounterCategory,
     value,
     onChange,
 }: FrlgHeldEncounterSelectorProps) {
@@ -61,14 +61,13 @@ export default function FrlgHeldEncounterSelector({
         let cancelled = false;
         setStatus("loading");
         setSpeciesOptions([]);
-        onChangeRef.current(undefined);
 
         const loadOptions = async () => {
             try {
                 const tenLines = await fetchTenLines();
                 const locationIds = (await tenLines.get_wild_locations(
                     game,
-                    FRLG_GRASS_ENCOUNTER_CATEGORY
+                    encounterCategory
                 )) as number[];
                 if (cancelled) return;
 
@@ -84,7 +83,7 @@ export default function FrlgHeldEncounterSelector({
                         ...location,
                         speciesForms: await tenLines.get_area_species(
                             game,
-                            FRLG_GRASS_ENCOUNTER_CATEGORY,
+                            encounterCategory,
                             location.locationIndex
                         ),
                     }))
@@ -154,7 +153,7 @@ export default function FrlgHeldEncounterSelector({
         return () => {
             cancelled = true;
         };
-    }, [active, game, resources]);
+    }, [active, encounterCategory, game, resources]);
 
     useEffect(() => {
         if (!active || status !== "ready") {

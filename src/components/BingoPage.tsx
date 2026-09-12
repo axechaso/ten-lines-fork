@@ -4,7 +4,7 @@ import type {
     ExtendedGeneratorState,
     ExtendedWildGeneratorState,
     FRLGContiguousSeedEntry,
-} from "../tenLines/generated";
+} from "../tenLines/generated.d";
 import fetchTenLines, { hexSeed, SEED_IDENTIFIER_TO_GAME } from "../tenLines";
 import { useI18n } from "../i18n";
 import type { CalibrationFormState } from "./CalibrationForm";

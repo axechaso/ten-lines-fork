@@ -99,7 +99,9 @@ const DEFAULT_COMPARE_SETTINGS: CalibrationCompareSettings = {
     position: "right",
     compareMode: "target",
     visibleColumns: DEFAULT_COMPARE_COLUMNS,
-    tableVisibleColumns: CALIBRATION_TABLE_COLUMN_OPTIONS,
+    tableVisibleColumns: CALIBRATION_TABLE_COLUMN_OPTIONS.filter(
+        (column) => column !== "stats"
+    ),
     calculatorEnabled: false,
     autoAddTarget: true,
     wildLevelFilterEnabled: false,
@@ -168,6 +170,27 @@ export interface CalibrationURLState {
     teachyTVMode: string;
     teachyTVRegularOut: string;
     bingoTvFluctuationMode: string;
+    calibrationTransfer: string;
+    calibrationMethod: string;
+    calibrationStaticCategory: string;
+    calibrationStaticPokemon: string;
+    calibrationWildCategory: string;
+    calibrationWildLocation: string;
+    calibrationWildPokemon: string;
+    calibrationWildLead: string;
+    calibrationFilterPokemon: string;
+}
+
+function parseOptionalDecimalParam(
+    searchParams: URLSearchParams,
+    key: string
+) {
+    const value = searchParams.get(key);
+    if (value === null) {
+        return undefined;
+    }
+    const parsed = Number.parseInt(value, 10);
+    return Number.isNaN(parsed) ? undefined : parsed;
 }
 
 function createCompareEntry(row: CalibrationCompareRow): CalibrationCompareEntry {
@@ -237,6 +260,38 @@ function useCalibrationURLState() {
         searchParams.get("teachyTVRegularOut") || "3600";
     const bingoTvFluctuationMode =
         searchParams.get("bingoTvFluctuationMode") || "false";
+    const calibrationTransfer =
+        searchParams.get("calibrationTransfer") || "";
+    const calibrationMethod = parseOptionalDecimalParam(
+        searchParams,
+        "calibrationMethod"
+    );
+    const calibrationStaticCategory = parseOptionalDecimalParam(
+        searchParams,
+        "calibrationStaticCategory"
+    );
+    const calibrationStaticPokemon = parseOptionalDecimalParam(
+        searchParams,
+        "calibrationStaticPokemon"
+    );
+    const calibrationWildCategory = parseOptionalDecimalParam(
+        searchParams,
+        "calibrationWildCategory"
+    );
+    const calibrationWildLocation = parseOptionalDecimalParam(
+        searchParams,
+        "calibrationWildLocation"
+    );
+    const calibrationWildPokemon = parseOptionalDecimalParam(
+        searchParams,
+        "calibrationWildPokemon"
+    );
+    const calibrationWildLead = parseOptionalDecimalParam(
+        searchParams,
+        "calibrationWildLead"
+    );
+    const calibrationFilterPokemon =
+        searchParams.get("calibrationFilterPokemon");
     const targetSeedValue =
         parseInt(searchParams.get("targetInitialSeed") || "DEAD", 16) ?? 0xdead;
     const setCalibrationURLState = (state: Partial<CalibrationURLState>) => {
@@ -266,6 +321,15 @@ function useCalibrationURLState() {
         teachyTVMode,
         teachyTVRegularOut,
         bingoTvFluctuationMode,
+        calibrationTransfer,
+        calibrationMethod,
+        calibrationStaticCategory,
+        calibrationStaticPokemon,
+        calibrationWildCategory,
+        calibrationWildLocation,
+        calibrationWildPokemon,
+        calibrationWildLead,
+        calibrationFilterPokemon,
         setCalibrationURLState,
     };
 }
@@ -321,8 +385,64 @@ export default function CalibrationForm({
         teachyTVMode,
         teachyTVRegularOut,
         bingoTvFluctuationMode,
+        calibrationTransfer,
+        calibrationMethod,
+        calibrationStaticCategory,
+        calibrationStaticPokemon,
+        calibrationWildCategory,
+        calibrationWildLocation,
+        calibrationWildPokemon,
+        calibrationWildLead,
+        calibrationFilterPokemon,
         setCalibrationURLState,
     } = useCalibrationURLState();
+
+    useEffect(() => {
+        if (!calibrationTransfer) {
+            return;
+        }
+
+        setCalibrationFormState((current) => ({
+            ...current,
+            ...(calibrationMethod === undefined
+                ? {}
+                : { method: calibrationMethod }),
+            ...(calibrationStaticCategory === undefined
+                ? {}
+                : { staticCategory: calibrationStaticCategory }),
+            ...(calibrationStaticPokemon === undefined
+                ? {}
+                : { staticPokemon: calibrationStaticPokemon }),
+            ...(calibrationWildCategory === undefined
+                ? {}
+                : { wildCategory: calibrationWildCategory }),
+            ...(calibrationWildLocation === undefined
+                ? {}
+                : { wildLocation: calibrationWildLocation }),
+            ...(calibrationWildPokemon === undefined
+                ? {}
+                : { wildPokemon: calibrationWildPokemon }),
+            ...(calibrationWildLead === undefined
+                ? {}
+                : { wildLead: calibrationWildLead }),
+            ...(calibrationFilterPokemon === null
+                ? {}
+                : {
+                      shouldFilterPokemon:
+                          calibrationFilterPokemon === "true",
+                  }),
+        }));
+    }, [
+        calibrationFilterPokemon,
+        calibrationMethod,
+        calibrationStaticCategory,
+        calibrationStaticPokemon,
+        calibrationTransfer,
+        calibrationWildCategory,
+        calibrationWildLead,
+        calibrationWildLocation,
+        calibrationWildPokemon,
+    ]);
 
     const [, setBingoBoard, , setBingoCounters] = useBingoBoard();
 

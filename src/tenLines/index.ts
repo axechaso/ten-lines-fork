@@ -1,5 +1,5 @@
 import { wrap, type Remote } from "comlink";
-import type { MainModule } from "./generated";
+import type { MainModule } from "./generated.d";
 import Worker from "./worker?worker";
 
 export const Game = {

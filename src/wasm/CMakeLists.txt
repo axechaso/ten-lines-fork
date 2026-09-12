@@ -64,12 +64,12 @@ set(WASM_FLAGS
     -sNO_DISABLE_EXCEPTION_CATCHING
     -sEXPORT_ES6=1
     -sENVIRONMENT=worker
-    --emit-tsd ${WASM_LIB_DIR}/index.d.ts
+    --emit-tsd ${WASM_LIB_DIR}/index-combined.d.ts
 )
 
 set_target_properties(ten_lines PROPERTIES
     LIBRARY_NAME "tenLines"
-    OUTPUT_NAME "index"
+    OUTPUT_NAME "index-combined"
     EXECUTABLE_OUTPUT_PATH ${WASM_LIB_DIR}
     RUNTIME_OUTPUT_DIRECTORY ${WASM_LIB_DIR}
 )

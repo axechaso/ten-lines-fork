@@ -9,18 +9,44 @@ import type { Locale } from "../i18n";
 
 export const FRLG_HELD_ITEM_SOURCE_COMMIT =
     "df4449a27cd78dd747ce269e47d3ab4a0149d8f4";
+export const FRLG_HELD_PROFILE_ENGLISH_SWITCH = "frlg-english-switch";
+// Kept as an alias for callers created before non-grass encounter support.
 export const FRLG_HELD_PROFILE_FIRE_RED_ENGLISH_SWEET_SCENT =
-    "fire-red-english-sweet-scent";
+    FRLG_HELD_PROFILE_ENGLISH_SWITCH;
+
+// PokeFinder Encounter enum values. Keep these explicit because the supported
+// FRLG categories are not contiguous (Grass=0, RockSmash=3, Surfing=4, rods=6-8).
+export const FRLG_HELD_ENCOUNTER_GRASS = 0;
+export const FRLG_HELD_ENCOUNTER_ROCK_SMASH = 3;
+export const FRLG_HELD_ENCOUNTER_SURFING = 4;
+export const FRLG_HELD_ENCOUNTER_OLD_ROD = 6;
+export const FRLG_HELD_ENCOUNTER_GOOD_ROD = 7;
+export const FRLG_HELD_ENCOUNTER_SUPER_ROD = 8;
+export const FRLG_HELD_ENCOUNTER_CATEGORIES = [
+    FRLG_HELD_ENCOUNTER_GRASS,
+    FRLG_HELD_ENCOUNTER_ROCK_SMASH,
+    FRLG_HELD_ENCOUNTER_SURFING,
+    FRLG_HELD_ENCOUNTER_OLD_ROD,
+    FRLG_HELD_ENCOUNTER_GOOD_ROD,
+    FRLG_HELD_ENCOUNTER_SUPER_ROD,
+] as const;
 
 export const HELD_ITEM_FILTER_ANY = -2;
 export const HELD_ITEM_FILTER_ANY_ITEM = -1;
 export const FRLG_HELD_SEARCH_MODE_H1_STABLE = "h1-stable";
 export const FRLG_HELD_SEARCH_MODE_ALL_METHODS = "all-methods";
+export const FRLG_HELD_SEARCH_MODE_FOUR_TRACKS = "four-tracks";
+export const FRLG_HELD_SEARCH_MODE_FIVE_TRACKS = "five-tracks";
+export const FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC =
+    "five-tracks-symmetric";
 const FRLG_MAX_NATIONAL_DEX_SPECIES = 386;
 
 export type FrlgHeldSearchMode =
     | typeof FRLG_HELD_SEARCH_MODE_H1_STABLE
-    | typeof FRLG_HELD_SEARCH_MODE_ALL_METHODS;
+    | typeof FRLG_HELD_SEARCH_MODE_ALL_METHODS
+    | typeof FRLG_HELD_SEARCH_MODE_FOUR_TRACKS
+    | typeof FRLG_HELD_SEARCH_MODE_FIVE_TRACKS
+    | typeof FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC;
 
 export type FrlgHeldItemSlots = {
     common: number;
@@ -28,6 +54,8 @@ export type FrlgHeldItemSlots = {
 };
 
 export type FrlgHeldOffsetProfile = {
+    game: number;
+    encounterCategory: number;
     location: number;
     method: number;
     baseOffset: number;
@@ -56,7 +84,7 @@ export type FrlgHeldSearchPrediction = {
 };
 
 export type FrlgHeldPredictionContext = {
-    profileSet: typeof FRLG_HELD_PROFILE_FIRE_RED_ENGLISH_SWEET_SCENT;
+    profileSet: typeof FRLG_HELD_PROFILE_ENGLISH_SWITCH;
     game: number;
     encounterCategory: number;
     location: number;
@@ -182,40 +210,46 @@ const ITEM_NAMES: Readonly<
     225: { en: "Stick", zh: "大葱" },
 };
 
-// Empirical FireRed ENG + Sweet Scent profiles. These are deliberately scoped
-// by location and Method; no global offset is assumed. `alternateOffset` is the
+// Empirical English Switch FRLG profiles. Every entry is deliberately scoped
+// by game, encounter category, location and Method; no global offset is
+// assumed. Add future measurements here only. `alternateOffset` is the
 // observed/possible asynchronous +1 path, not a second guaranteed result.
 const HELD_OFFSET_PROFILES: readonly FrlgHeldOffsetProfile[] = [
-    { location: 8, method: WILD_1, baseOffset: 164, alternateOffset: 165, status: "verified", samples: 48 },
-    { location: 9, method: WILD_1, baseOffset: 164, alternateOffset: 165, status: "verified" },
-    { location: 10, method: WILD_1, baseOffset: 164, alternateOffset: 165, status: "verified", samples: 57 },
-    { location: 10, method: WILD_2, baseOffset: 163, alternateOffset: 164, status: "verified", samples: 3 },
-    { location: 10, method: WILD_4, baseOffset: 163, alternateOffset: 164, status: "verified", samples: 19 },
-    { location: 13, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "variable", samples: 21 },
-    { location: 13, method: WILD_4, baseOffset: 169, alternateOffset: 170, status: "variable" },
-    { location: 14, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "variable" },
-    { location: 20, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "variable" },
-    { location: 20, method: WILD_4, baseOffset: 169, alternateOffset: 170, status: "verified", samples: 6 },
-    { location: 27, method: WILD_1, baseOffset: 181, alternateOffset: 182, status: "verified", samples: 103 },
-    { location: 28, method: WILD_1, baseOffset: 165, alternateOffset: 166, status: "verified", samples: 43 },
-    { location: 34, method: WILD_1, baseOffset: 168, alternateOffset: 169, status: "verified", samples: 87 },
-    { location: 34, method: WILD_4, baseOffset: 167, alternateOffset: 168, status: "verified", samples: 12 },
-    { location: 38, method: WILD_1, baseOffset: 168, alternateOffset: 169, status: "variable" },
-    { location: 38, method: WILD_2, baseOffset: 167, alternateOffset: 168, status: "variable" },
-    { location: 38, method: WILD_4, baseOffset: 167, alternateOffset: 168, status: "variable" },
-    { location: 39, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "verified", samples: 27 },
-    { location: 91, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified", samples: 24 },
-    { location: 99, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified", samples: 15 },
-    { location: 100, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified", samples: 7 },
-    { location: 100, method: WILD_2, baseOffset: 165, alternateOffset: 166, status: "verified", samples: 2 },
-    { location: 100, method: WILD_4, baseOffset: 165, alternateOffset: 166, status: "verified", samples: 5 },
-    { location: 101, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified" },
-    { location: 101, method: WILD_4, baseOffset: 165, alternateOffset: 166, status: "verified" },
-    { location: 110, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "verified", samples: 62 },
-    { location: 110, method: WILD_4, baseOffset: 169, alternateOffset: 170, status: "verified", samples: 16 },
-    { location: 111, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified", samples: 9 },
-    { location: 112, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified", samples: 29 },
-    { location: 112, method: WILD_4, baseOffset: 165, alternateOffset: 166, status: "verified", samples: 8 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 8, method: WILD_1, baseOffset: 164, alternateOffset: 165, status: "verified", samples: 48 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 9, method: WILD_1, baseOffset: 164, alternateOffset: 165, status: "verified" },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 10, method: WILD_1, baseOffset: 164, alternateOffset: 165, status: "verified", samples: 57 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 10, method: WILD_2, baseOffset: 163, alternateOffset: 164, status: "verified", samples: 3 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 10, method: WILD_4, baseOffset: 163, alternateOffset: 164, status: "verified", samples: 19 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 13, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "variable", samples: 21 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 13, method: WILD_4, baseOffset: 169, alternateOffset: 170, status: "variable" },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 14, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "variable" },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 20, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "variable" },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 20, method: WILD_4, baseOffset: 169, alternateOffset: 170, status: "verified", samples: 6 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 27, method: WILD_1, baseOffset: 181, alternateOffset: 182, status: "verified", samples: 103 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 28, method: WILD_1, baseOffset: 165, alternateOffset: 166, status: "verified", samples: 43 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 34, method: WILD_1, baseOffset: 168, alternateOffset: 169, status: "verified", samples: 87 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 34, method: WILD_4, baseOffset: 167, alternateOffset: 168, status: "verified", samples: 12 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 38, method: WILD_1, baseOffset: 168, alternateOffset: 169, status: "variable" },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 38, method: WILD_2, baseOffset: 167, alternateOffset: 168, status: "variable" },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 38, method: WILD_4, baseOffset: 167, alternateOffset: 168, status: "variable" },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 39, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "verified", samples: 27 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 91, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified", samples: 24 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 99, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified", samples: 15 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 100, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified", samples: 7 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 100, method: WILD_2, baseOffset: 165, alternateOffset: 166, status: "verified", samples: 2 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 100, method: WILD_4, baseOffset: 165, alternateOffset: 166, status: "verified", samples: 5 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 101, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified" },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 101, method: WILD_4, baseOffset: 165, alternateOffset: 166, status: "verified" },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 110, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "verified", samples: 62 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 110, method: WILD_4, baseOffset: 169, alternateOffset: 170, status: "verified", samples: 16 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 111, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified", samples: 9 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 112, method: WILD_1, baseOffset: 166, alternateOffset: 167, status: "verified", samples: 29 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_GRASS, location: 112, method: WILD_4, baseOffset: 165, alternateOffset: 166, status: "verified", samples: 8 },
+
+    // Safari Zone entrance/center Super Rod (Dragonair field tests).
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_SUPER_ROD, location: 20, method: WILD_1, baseOffset: 170, alternateOffset: 171, status: "variable", samples: 9 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_SUPER_ROD, location: 20, method: WILD_2, baseOffset: 169, alternateOffset: 170, status: "variable", samples: 1 },
+    { game: Game.FireRed, encounterCategory: FRLG_HELD_ENCOUNTER_SUPER_ROD, location: 20, method: WILD_4, baseOffset: 169, alternateOffset: 170, status: "variable", samples: 3 },
 ];
 
 export function getFrlgHeldItemSlots(
@@ -310,15 +344,16 @@ export function getFrlgHeldOffsetProfile(
     method: number
 ): FrlgHeldOffsetProfile | undefined {
     if (
-        profileSet !== FRLG_HELD_PROFILE_FIRE_RED_ENGLISH_SWEET_SCENT ||
-        game !== Game.FireRed ||
-        encounterCategory !== 0
+        profileSet !== FRLG_HELD_PROFILE_ENGLISH_SWITCH
     ) {
         return undefined;
     }
     return HELD_OFFSET_PROFILES.find(
         (profile) =>
-            profile.location === location && profile.method === method
+            profile.game === game &&
+            profile.encounterCategory === encounterCategory &&
+            profile.location === location &&
+            profile.method === method
     );
 }
 
@@ -371,9 +406,42 @@ export function getFrlgHeldSearchOffsets(
     if (!Number.isInteger(h1StandardOffset) || h1StandardOffset <= 0) {
         return [];
     }
-    return searchMode === FRLG_HELD_SEARCH_MODE_ALL_METHODS
-        ? [h1StandardOffset - 1, h1StandardOffset, h1StandardOffset + 1]
-        : [h1StandardOffset, h1StandardOffset + 1];
+    if (searchMode === FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC) {
+        return h1StandardOffset < 2
+            ? []
+            : [
+                  h1StandardOffset - 2,
+                  h1StandardOffset - 1,
+                  h1StandardOffset,
+                  h1StandardOffset + 1,
+                  h1StandardOffset + 2,
+              ];
+    }
+    if (searchMode === FRLG_HELD_SEARCH_MODE_FIVE_TRACKS) {
+        return [
+            h1StandardOffset - 1,
+            h1StandardOffset,
+            h1StandardOffset + 1,
+            h1StandardOffset + 2,
+            h1StandardOffset + 3,
+        ];
+    }
+    if (searchMode === FRLG_HELD_SEARCH_MODE_FOUR_TRACKS) {
+        return [
+            h1StandardOffset - 1,
+            h1StandardOffset,
+            h1StandardOffset + 1,
+            h1StandardOffset + 2,
+        ];
+    }
+    if (searchMode === FRLG_HELD_SEARCH_MODE_ALL_METHODS) {
+        return [
+            h1StandardOffset - 1,
+            h1StandardOffset,
+            h1StandardOffset + 1,
+        ];
+    }
+    return [h1StandardOffset, h1StandardOffset + 1];
 }
 
 export function predictFrlgHeldItemAtOffsets({
@@ -414,6 +482,18 @@ export function matchesFrlgHeldItemSearchFilter(
         return prediction.rolls.every((roll) => roll.itemId !== 0);
     }
     return prediction.rolls.every((roll) => roll.itemId === filter);
+}
+
+export function matchesFrlgHeldShinyFilter(
+    row: { shiny: number },
+    shiny: number
+): boolean {
+    // PokeFinder marks Gen 3 shinies as 1 (star) or 2 (square); "yes" must
+    // match any shiny value, not just the star variant.
+    if (shiny === 0) {
+        return row.shiny === 0;
+    }
+    return row.shiny !== 0;
 }
 
 export function predictFrlgHeldItem({

@@ -1,4 +1,4 @@
-import { Button } from "@mui/material";
+import { Box, Button, IconButton, Tooltip } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -11,14 +11,20 @@ import { memo, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { useI18n } from "../i18n";
+import { setLocalStorageValue } from "../hooks/useLocalStorage";
 import { frameToMS, hexSeed } from "../tenLines";
-import type { ExtendedEggGeneratorState } from "../tenLines/generated";
+import type { ExtendedEggGeneratorState } from "../tenLines/generated.d";
 import {
     buildFrameLeewayRange,
     formatEggSeedTime,
     formatInheritanceSlot,
+    getEggSeedTimeOffset,
     paginateEggResults,
 } from "./frlgEggHelpers";
+import {
+    createEggCalibrationCompareEntry,
+    EGG_COMPARE_TARGET_STORAGE_KEY,
+} from "./EggCalibrationComparePanel";
 
 const EGG_RESULTS_PER_PAGE = 50;
 
@@ -43,11 +49,23 @@ const EggTable = memo(function EggTable({
     showInheritance,
     calibrationContext,
     gameConsole,
+    targetSeedTimes,
+    compareTargetExists = false,
+    onAddCompareEntry,
 }: {
     rows: ExtendedEggGeneratorState[];
     showInheritance: boolean;
     calibrationContext?: EggCalibrationContext;
     gameConsole: string;
+    targetSeedTimes?: {
+        held: number;
+        pickup: number;
+    };
+    compareTargetExists?: boolean;
+    onAddCompareEntry?: (
+        row: ExtendedEggGeneratorState,
+        destination: "target" | "history"
+    ) => void;
 }) {
     const { t, resources } = useI18n();
     const [, setSearchParams] = useSearchParams();
@@ -72,6 +90,10 @@ const EggTable = memo(function EggTable({
             return;
         }
 
+        setLocalStorageValue(
+            EGG_COMPARE_TARGET_STORAGE_KEY,
+            createEggCalibrationCompareEntry(row)
+        );
         setSearchParams((previous) => {
             const params = new URLSearchParams(previous);
             params.set("page", "6");
@@ -126,6 +148,11 @@ const EggTable = memo(function EggTable({
             <Table>
                 <TableHead>
                     <TableRow>
+                        {onAddCompareEntry && (
+                            <TableCell width={72} align="center">
+                                {t("table.actions")}
+                            </TableCell>
+                        )}
                         <TableCell>{t("table.heldSeed")}</TableCell>
                         <TableCell>{t("table.heldSeedTime")}</TableCell>
                         <TableCell>{t("table.heldSettings")}</TableCell>
@@ -153,19 +180,102 @@ const EggTable = memo(function EggTable({
                 <TableBody>
                     {paginatedRows.map((row, index) => {
                         const absoluteIndex = page * EGG_RESULTS_PER_PAGE + index;
+                        const heldSeedMs = formatEggSeedTime(
+                            row.heldSeedTime,
+                            gameConsole,
+                            frameToMS
+                        );
+                        const pickupSeedMs = formatEggSeedTime(
+                            row.pickupSeedTime,
+                            gameConsole,
+                            frameToMS
+                        );
+                        const heldOffsetMs =
+                            targetSeedTimes === undefined
+                                ? null
+                                : getEggSeedTimeOffset(
+                                      row.heldSeedTime,
+                                      targetSeedTimes.held,
+                                      gameConsole,
+                                      frameToMS
+                                  );
+                        const pickupOffsetMs =
+                            targetSeedTimes === undefined
+                                ? null
+                                : getEggSeedTimeOffset(
+                                      row.pickupSeedTime,
+                                      targetSeedTimes.pickup,
+                                      gameConsole,
+                                      frameToMS
+                                  );
 
                         return (
                             <TableRow key={absoluteIndex}>
+                                {onAddCompareEntry && (
+                                    <TableCell align="center">
+                                        <Tooltip
+                                            title={t(
+                                                compareTargetExists
+                                                    ? "compare.addToHistory"
+                                                    : "compare.addToTarget"
+                                            )}
+                                        >
+                                            <IconButton
+                                                type="button"
+                                                size="small"
+                                                color="primary"
+                                                aria-label={t(
+                                                    compareTargetExists
+                                                        ? "compare.addToHistory"
+                                                        : "compare.addToTarget"
+                                                )}
+                                                onClick={() =>
+                                                    onAddCompareEntry(
+                                                        row,
+                                                        compareTargetExists
+                                                            ? "history"
+                                                            : "target"
+                                                    )
+                                                }
+                                                sx={{
+                                                    width: 28,
+                                                    height: 28,
+                                                    backgroundColor:
+                                                        "primary.main",
+                                                    color: "primary.contrastText",
+                                                    "&:hover": {
+                                                        backgroundColor:
+                                                            "primary.dark",
+                                                    },
+                                                }}
+                                            >
+                                                <Box
+                                                    component="span"
+                                                    sx={{
+                                                        fontWeight: 700,
+                                                        lineHeight: 1,
+                                                    }}
+                                                >
+                                                    +
+                                                </Box>
+                                            </IconButton>
+                                        </Tooltip>
+                                    </TableCell>
+                                )}
                                 <TableCell>
                                     {hexSeed(row.heldInitialSeed, 16)}
                                 </TableCell>
                                 <TableCell>
-                                    {formatEggSeedTime(
-                                        row.heldSeedTime,
-                                        gameConsole,
-                                        frameToMS
-                                    )}
+                                    {heldSeedMs}
                                     {t("messages.ms")}
+                                    {heldOffsetMs !== null && (
+                                        <>
+                                            {" ("}
+                                            {heldOffsetMs >= 0 && "+"}
+                                            {heldOffsetMs}
+                                            {t("messages.ms")})
+                                        </>
+                                    )}
                                 </TableCell>
                                 <TableCell>{row.heldSettings}</TableCell>
                                 <TableCell>{row.heldAdvances}</TableCell>
@@ -173,12 +283,16 @@ const EggTable = memo(function EggTable({
                                     {hexSeed(row.pickupInitialSeed, 16)}
                                 </TableCell>
                                 <TableCell>
-                                    {formatEggSeedTime(
-                                        row.pickupSeedTime,
-                                        gameConsole,
-                                        frameToMS
-                                    )}
+                                    {pickupSeedMs}
                                     {t("messages.ms")}
+                                    {pickupOffsetMs !== null && (
+                                        <>
+                                            {" ("}
+                                            {pickupOffsetMs >= 0 && "+"}
+                                            {pickupOffsetMs}
+                                            {t("messages.ms")})
+                                        </>
+                                    )}
                                 </TableCell>
                                 <TableCell>{row.pickupSettings}</TableCell>
                                 <TableCell>{row.pickupAdvances}</TableCell>

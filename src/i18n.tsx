@@ -281,6 +281,7 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             hiddenPower: "Hidden Power",
             ability: "Ability",
             perfectIvCount: "Perfect IV Count",
+            perfectIvPreset: "Perfect IV Preset",
             category: "Category",
             pokemon: "Pokemon",
             location: "Location",
@@ -315,6 +316,10 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             ivPreset: "IV Preset",
             bingoTvFluctuationMode: "TV Fluctuation Mode",
             showInheritance: "Show Inheritance",
+            skipEarlyEggSeeds:
+                "Skip the first {count} seeds in each seed table",
+            sameEggInitialSeed:
+                "Use the same seed for egg generation and pickup",
         },
         options: {
             rubyPaintingSeed: "Ruby Painting Seed",
@@ -387,6 +392,8 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             select: "Select",
             startup: "Startup",
             blackout: "Blackout",
+            yes: "Yes",
+            no: "No",
             normal: "Normal",
             split: "Split",
             alternate: "Alternate",
@@ -455,7 +462,7 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
         heldItems: {
             pageTitle: "FRLG Wild Held Items",
             pageDescription:
-                "Search English Switch FireRed or LeafGreen Sweet Scent H1 frames. Tested Offset presets currently apply to FireRed only.",
+                "Search English Switch FireRed or LeafGreen H1 frames for grass/caves, Rock Smash, Surfing, and all three rods. Tested Offset presets currently apply to FireRed only.",
             separatePageNotice:
                 "Search-specific settings and results stay independent. Game, console, TID, and SID are shared across pages.",
             seedAndAdvanceInstruction:
@@ -465,10 +472,24 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             searchMode: "Search mode",
             searchModeH1Stable: "H1 stable (O / O+1)",
             searchModeAllMethods: "H1/H2/H4 coverage (O-1 / O / O+1)",
+            searchModeFourTracks:
+                "Four-track coverage: O-1 / O / O+1 / O+2",
+            searchModeFiveTracks:
+                "Five-track coverage: O-1 / O / O+1 / O+2 / O+3",
+            searchModeFiveTracksSymmetric:
+                "Five-track symmetric: O-2 / O-1 / O / O+1 / O+2",
             searchModeH1StableHelp:
-                "Generates H1 frames and keeps a target only when both the standard H1 offset O and its possible +1 path O+1 match the selected held item.",
+                "Uses the standard H1 offset O and its possible +1 path O+1. During held-item filtering, both tracks must match the selected item.",
             searchModeAllMethodsHelp:
-                "Generates H1 frames and keeps a target only when O-1, O, and O+1 all match. This covers the observed H2/H4 = H1-1 rule and the possible +1 path.",
+                "Uses O-1, O, and O+1 to cover the observed H2/H4 = H1-1 rule and the possible +1 path. During held-item filtering, all three tracks must match.",
+            searchModeFourTracksHelp:
+                "Uses O-1, O, O+1, and O+2 for wider adjacent-path coverage. During held-item filtering, all four tracks must match.",
+            searchModeFiveTracksHelp:
+                "Uses O-1, O, O+1, O+2, and O+3 for the widest adjacent-path coverage. During held-item filtering, all five tracks must match.",
+            searchModeFiveTracksSymmetricHelp:
+                "Uses O-2, O-1, O, O+1, and O+2 for symmetric adjacent-path coverage. During held-item filtering, all five tracks must match.",
+            searchModeShinyHelp:
+                "In shiny + frame range mode, this selection controls the held-item tracks shown in results but does not filter any result.",
             standardOffset: "H1 standard Offset (O)",
             offsetPresetAvailable:
                 "Preset H1 Offset: +{offset}. This mode checks {offsets}; you may edit the preset.",
@@ -477,7 +498,7 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             offsetRequired:
                 "Enter an H1 standard Offset greater than 0 before filtering or searching.",
             enableSweetScentProfile:
-                "Use FireRed English Sweet Scent held-item profile (experimental)",
+                "Use English Switch FRLG held-item profiles (experimental)",
             sourceData: "FRLG source item rates:",
             profileAvailable:
                 "FireRed field-tested profile: {profiles}.",
@@ -498,6 +519,13 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             searchFailed: "Held-item search failed: {error}",
             noResults: "No matching held-item results were found.",
             resultCount: "Showing {count} results (up to {limit}).",
+            shinyOnlyMode: "Shiny + frame range mode",
+            shinyOnlyModeHelp:
+                "Searches the entire seed library ({count} seeds) and filters only by shiny status and the Advance range based on the entered TID/SID. The selected Offset coverage is display-only. WASM stops after {limit} matching results.",
+            shinyFilter: "Shiny filter",
+            noResultsShiny: "No matching shiny results were found.",
+            shinySearchWorkload:
+                "This search covers {frames} frames ({seeds} seeds × {advances} Advances per seed) and may take a long time.",
         },
         compare: {
             title: "Calibration Compare",
@@ -792,6 +820,7 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             hiddenPower: "\u89c9\u9192\u529b\u91cf",
             ability: "\u7279\u6027",
             perfectIvCount: "\u6ee1\u4e2a\u4f53\u503c\u6570\u91cf",
+            perfectIvPreset: "\u6ee1\u4e2a\u4f53\u9884\u8bbe",
             category: "\u5206\u7c7b",
             pokemon: "\u5b9d\u53ef\u68a6",
             location: "\u5730\u70b9",
@@ -826,6 +855,10 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             ivPreset: "\u4e2a\u4f53\u9884\u8bbe",
             bingoTvFluctuationMode: "TV\u6ce2\u52a8\u6a21\u5f0f",
             showInheritance: "\u663e\u793a\u9057\u4f20",
+            skipEarlyEggSeeds:
+                "\u5ffd\u7565\u6bcf\u4e2a Seed \u8868\u524d {count} \u4e2a Seed",
+            sameEggInitialSeed:
+                "\u86cb\u751f\u6210\u4e0e\u86cb\u9886\u53d6\u4f7f\u7528\u76f8\u540c Seed",
         },
         options: {
             rubyPaintingSeed: "\u7ea2\u5b9d\u77f3\u7ed8\u753b Seed",
@@ -903,6 +936,8 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             select: "\u9009\u62e9",
             startup: "\u542f\u52a8",
             blackout: "\u9ed1\u5c4f",
+            yes: "\u662f",
+            no: "\u5426",
             normal: "Normal",
             split: "Split",
             alternate: "Alternate",
@@ -972,7 +1007,7 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
         heldItems: {
             pageTitle: "FRLG \u91ce\u751f\u643a\u5e26\u7269",
             pageDescription:
-                "\u641c\u7d22 Switch \u82f1\u6587\u7248\u706b\u7ea2\u6216\u53f6\u7eff\u7684\u751c\u751c\u9999\u6c14 H1 \u5e27\u3002\u5f53\u524d\u5b9e\u6d4b Offset \u9884\u8bbe\u4ec5\u9002\u7528\u4e8e\u706b\u7ea2\u3002",
+                "\u641c\u7d22 Switch \u82f1\u6587\u7248\u706b\u7ea2\u6216\u53f6\u7eff\u7684\u8349\u4e1b/\u6d1e\u7a9f\u3001\u788e\u5ca9\u3001\u51b2\u6d6a\u548c\u4e09\u79cd\u9493\u7aff H1 \u5e27\u3002\u5f53\u524d\u5b9e\u6d4b Offset \u9884\u8bbe\u4ec5\u9002\u7528\u4e8e\u706b\u7ea2\u3002",
             separatePageNotice:
                 "\u641c\u7d22\u4e13\u7528\u8bbe\u7f6e\u548c\u7ed3\u679c\u4ecd\u4fdd\u6301\u72ec\u7acb\uff1b\u6e38\u620f\u3001\u673a\u578b\u3001TID \u548c SID \u4f1a\u5728\u5404\u9875\u9762\u540c\u6b65\u3002",
             seedAndAdvanceInstruction:
@@ -983,10 +1018,24 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             searchModeH1Stable: "H1 \u7a33\u5b9a\uff08O / O+1\uff09",
             searchModeAllMethods:
                 "H1/H2/H4 \u5168\u8986\u76d6\uff08O-1 / O / O+1\uff09",
+            searchModeFourTracks:
+                "\u56db\u8f68\u5e7f\u8986\u76d6\uff1aO-1 / O / O+1 / O+2",
+            searchModeFiveTracks:
+                "\u4e94\u8f68\u5e7f\u8986\u76d6\uff1aO-1 / O / O+1 / O+2 / O+3",
+            searchModeFiveTracksSymmetric:
+                "\u4e94\u8f68\u5bf9\u79f0\u8986\u76d6\uff1aO-2 / O-1 / O / O+1 / O+2",
             searchModeH1StableHelp:
-                "\u751f\u6210 H1 \u5e27\uff1b\u53ea\u4fdd\u7559 H1 \u6807\u51c6 O \u4e0e\u53ef\u80fd\u7684 +1 \u8f68\u8ff9 O+1 \u90fd\u7b26\u5408\u6240\u9009\u643a\u5e26\u7269\u7684\u76ee\u6807\u3002",
+                "\u4f7f\u7528 H1 \u6807\u51c6 O \u4e0e\u53ef\u80fd\u7684 +1 \u8f68\u8ff9 O+1\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u4e24\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u6240\u9009\u9053\u5177\u3002",
             searchModeAllMethodsHelp:
-                "\u751f\u6210 H1 \u5e27\uff1b\u53ea\u4fdd\u7559 O-1\u3001O\u3001O+1 \u5168\u90e8\u7b26\u5408\u7684\u76ee\u6807\u3002\u8fd9\u8986\u76d6\u5df2\u89c2\u5bdf\u5230\u7684 H2/H4 = H1-1 \u89c4\u5219\u53ca\u5176 +1 \u8f68\u8ff9\u3002",
+                "\u4f7f\u7528 O-1\u3001O\u3001O+1 \u8986\u76d6\u5df2\u89c2\u5bdf\u5230\u7684 H2/H4 = H1-1 \u89c4\u5219\u53ca\u5176 +1 \u8f68\u8ff9\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u4e09\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u3002",
+            searchModeFourTracksHelp:
+                "\u4f7f\u7528 O-1\u3001O\u3001O+1\u3001O+2 \u6269\u5927\u76f8\u90bb\u8f68\u8ff9\u8986\u76d6\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u56db\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u3002",
+            searchModeFiveTracksHelp:
+                "\u4f7f\u7528 O-1\u3001O\u3001O+1\u3001O+2\u3001O+3 \u6269\u5927\u76f8\u90bb\u8f68\u8ff9\u8986\u76d6\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u4e94\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u3002",
+            searchModeFiveTracksSymmetricHelp:
+                "\u4f7f\u7528 O-2\u3001O-1\u3001O\u3001O+1\u3001O+2 \u8fdb\u884c\u5bf9\u79f0\u7684\u76f8\u90bb\u8f68\u8ff9\u8986\u76d6\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u4e94\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u3002",
+            searchModeShinyHelp:
+                "\u5728\u95ea\u5149 + \u5e27\u6570\u8303\u56f4\u6a21\u5f0f\u4e0b\uff0c\u8be5\u9009\u62e9\u53ea\u63a7\u5236\u7ed3\u679c\u4e2d\u663e\u793a\u7684\u643a\u5e26\u7269\u8f68\u8ff9\uff0c\u4e0d\u7b5b\u6389\u4efb\u4f55\u7ed3\u679c\u3002",
             standardOffset: "H1 \u6807\u51c6 Offset\uff08O\uff09",
             offsetPresetAvailable:
                 "\u5df2\u5957\u7528 H1 Offset \u9884\u8bbe +{offset}\u3002\u5f53\u524d\u6a21\u5f0f\u68c0\u67e5 {offsets}\uff1b\u4ecd\u53ef\u624b\u52a8\u4fee\u6539\u3002",
@@ -995,7 +1044,7 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             offsetRequired:
                 "\u8bf7\u5148\u8f93\u5165\u5927\u4e8e 0 \u7684 H1 \u6807\u51c6 Offset\uff0c\u518d\u7b5b\u9009\u6216\u641c\u7d22\u3002",
             enableSweetScentProfile:
-                "使用火红英文版甜甜香气携带物档案（实验）",
+                "使用 Switch 英文版 FRLG 携带物档案（实验）",
             sourceData: "FRLG 源码携带率：",
             profileAvailable: "火红实机验证档案：{profiles}。",
             profileUnavailable:
@@ -1016,6 +1065,14 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             noResults: "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u643a\u5e26\u7269\u7ed3\u679c\u3002",
             resultCount:
                 "\u5f53\u524d\u663e\u793a {count} \u6761\u7ed3\u679c\uff08\u6700\u591a {limit} \u6761\uff09\u3002",
+            shinyOnlyMode: "\u95ea\u5149\u0020\u002b\u0020\u5e27\u6570\u8303\u56f4\u6a21\u5f0f",
+            shinyOnlyModeHelp:
+                "\u641c\u7d22\u6574\u4e2a\u0020seed\u0020\u5e93\uff08\u5171\u0020{count}\u0020\u6761\uff09\uff0c\u53ea\u6309\u95ea\u5149\u72b6\u6001\u4e0e\u0020Advance\uff08\u5e27\u6570\uff09\u8303\u56f4\u7b5b\u9009\uff1b\u6240\u9009\u0020Offset\u0020\u8986\u76d6\u4ec5\u7528\u4e8e\u7ed3\u679c\u5c55\u793a\u3002WASM\u0020\u5728\u6536\u96c6\u5230\u0020{limit}\u0020\u6761\u5339\u914d\u7ed3\u679c\u540e\u7acb\u5373\u505c\u6b62\u3002",
+            shinyFilter: "\u95ea\u5149\u7b5b\u9009",
+            noResultsShiny:
+                "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u95ea\u5149\u7ed3\u679c\u3002",
+            shinySearchWorkload:
+                "\u672c\u6b21\u641c\u7d22\u8986\u76d6\u0020{frames}\u0020\u5e27\uff08{seeds}\u0020\u6761\u0020seed\u0020\u00d7\u0020\u6bcf\u6761\u0020{advances}\u0020\u5e27\uff09\uff0c\u8017\u65f6\u53ef\u80fd\u8f83\u957f\u3002",
         },
         compare: {
             title: "\u6821\u51c6\u5bf9\u7167",

@@ -21,7 +21,7 @@ import fetchTenLines, {
     fixGameConsole,
     SEED_IDENTIFIER_TO_GAME,
 } from "../tenLines";
-import type { ExtendedEggGeneratorState } from "../tenLines/generated";
+import type { ExtendedEggGeneratorState } from "../tenLines/generated.d";
 import { filterNatureOptions } from "../utils/natureSearch";
 import IvEntry from "./IvEntry";
 import NumericalInput from "./NumericalInput";
@@ -34,6 +34,7 @@ import {
     DEFAULT_FRLG_EGG_MAX_RESULTS,
     DEFAULT_FRLG_EGG_METHOD,
     DEFAULT_FRLG_EGG_PARENT_IVS,
+    DEFAULT_FRLG_EGG_SEED_SKIP_COUNT,
     FRLG_EGG_COMPATIBILITY_OPTIONS,
     FRLG_EGG_IV_PRESETS,
     FRLG_EGG_METHODS,
@@ -41,8 +42,10 @@ import {
     buildEggSeedSearchPhases,
     calculateEggSearchProgress,
     filterFrlgEggGameOptions,
+    formatEggSearchError,
     isCompatibleEggParentPair,
     isFrlgEggGame,
+    skipEggSeedTableEntries,
 } from "./frlgEggHelpers";
 
 const DEFAULT_IVS = DEFAULT_FRLG_EGG_PARENT_IVS.map((value) => value.toString());
@@ -167,6 +170,8 @@ export default function EggForm({
     const [ivRanges, setIvRanges] = useState(copyIvRanges);
     const [ivRangesValid, setIvRangesValid] = useState(true);
     const [showInheritance, setShowInheritance] = useState(false);
+    const [skipEarlySeeds, setSkipEarlySeeds] = useState(true);
+    const [sameInitialSeedOnly, setSameInitialSeedOnly] = useState(true);
     const [rows, setRows] = useState<ExtendedEggGeneratorState[]>([]);
     const [searching, setSearching] = useState(false);
     const [searchProgress, setSearchProgress] = useState<EggSearchProgress | null>(
@@ -258,17 +263,26 @@ export default function EggForm({
         try {
             const tenLines = await fetchTenLines();
             const seedData = await fetchSeedData(game);
-            const eggSeeds = await tenLines.get_all_contiguous_seed_list(
+            const allEggSeeds = await tenLines.get_all_contiguous_seed_list(
                 seedData,
                 game
             );
+            const eggSeeds = skipEarlySeeds
+                ? skipEggSeedTableEntries(
+                      allEggSeeds,
+                      DEFAULT_FRLG_EGG_SEED_SKIP_COUNT
+                  )
+                : allEggSeeds;
 
             if (eggSeeds.length === 0) {
                 setMessage(t("messages.noEggSeeds"));
                 return;
             }
 
-            const searchPhases = buildEggSeedSearchPhases(eggSeeds);
+            const searchPhases = buildEggSeedSearchPhases(
+                eggSeeds,
+                sameInitialSeedOnly
+            );
             const totalSeedPairs = searchPhases.reduce(
                 (total, phase) => total + phase.pairCount,
                 0
@@ -311,6 +325,7 @@ export default function EggForm({
                         t("common.any"),
                         t("common.any"),
                         -1,
+                        sameInitialSeedOnly,
                         proxy((batch: ExtendedEggGeneratorState[]) => {
                             receivedResults += batch.length;
                             setRows((currentRows) => [...currentRows, ...batch]);
@@ -348,7 +363,7 @@ export default function EggForm({
                 setMessage(t("messages.eggResultsCapHit"));
             }
         } catch (error) {
-            setMessage(error instanceof Error ? error.message : String(error));
+            setMessage(formatEggSearchError(error));
         } finally {
             setSearching(false);
         }
@@ -480,6 +495,39 @@ export default function EggForm({
                     minimumValue={1}
                     maximumValue={10000}
                     onChange={(_, next) => setMaxResults(next.value)}
+                />
+            </Box>
+            <Box
+                sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    columnGap: 3,
+                    rowGap: 0,
+                }}
+            >
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={skipEarlySeeds}
+                            onChange={(event) =>
+                                setSkipEarlySeeds(event.target.checked)
+                            }
+                        />
+                    }
+                    label={t("labels.skipEarlyEggSeeds", {
+                        count: DEFAULT_FRLG_EGG_SEED_SKIP_COUNT.toString(),
+                    })}
+                />
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={sameInitialSeedOnly}
+                            onChange={(event) =>
+                                setSameInitialSeedOnly(event.target.checked)
+                            }
+                        />
+                    }
+                    label={t("labels.sameEggInitialSeed")}
                 />
             </Box>
 

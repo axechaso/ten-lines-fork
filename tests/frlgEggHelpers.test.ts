@@ -6,6 +6,7 @@ import {
     DEFAULT_FRLG_EGG_MAX_RESULTS,
     DEFAULT_FRLG_EGG_METHOD,
     DEFAULT_FRLG_EGG_PARENT_IVS,
+    DEFAULT_FRLG_EGG_SEED_SKIP_COUNT,
     FRLG_EGG_COMPATIBILITY_OPTIONS,
     EGG_GENDER_OPTIONS,
     FRLG_EGG_IV_PRESETS,
@@ -16,14 +17,20 @@ import {
     buildFrameLeewayRange,
     buildSeedSettingKey,
     calculateEggSearchProgress,
+    countMatchingInitialSeedPairs,
     filterFrlgEggGameOptions,
+    formatEggSearchError,
     formatEggSeedTime,
     formatInheritanceSlot,
+    getEggCompareDeltas,
+    getEggSeedTimeOffset,
+    getPreferredEggSeedSettings,
     getSeedRangeAroundTarget,
     isCompatibleEggParentPair,
     isFrlgEggGame,
     paginateEggResults,
     parseEggSeedSettings,
+    skipEggSeedTableEntries,
 } from "../src/components/frlgEggHelpers.ts";
 
 assert.equal(isFrlgEggGame("fr"), true);
@@ -61,7 +68,7 @@ assert.deepEqual(parseEggSeedSettings("mono_a_l_none"), {
 });
 assert.deepEqual(parseEggSeedSettings("bad"), {
     sound: "mono",
-    buttonMode: "a",
+    buttonMode: "h",
     seedButton: "a",
     extraButton: "none",
 });
@@ -96,6 +103,7 @@ assert.equal(DEFAULT_FRLG_EGG_COMPATIBILITY, 20);
 assert.deepEqual(DEFAULT_FRLG_EGG_ADVANCE_RANGE, [1000, 5000]);
 assert.deepEqual(DEFAULT_FRLG_EGG_PARENT_IVS, [31, 31, 31, 31, 31, 31]);
 assert.equal(DEFAULT_FRLG_EGG_MAX_RESULTS, 10);
+assert.equal(DEFAULT_FRLG_EGG_SEED_SKIP_COUNT, 10);
 assert.deepEqual(FRLG_EGG_METHODS, [
     { value: 11, labelKey: "options.normal" },
     { value: 12, labelKey: "options.split" },
@@ -163,11 +171,23 @@ assert.equal(calculateEggSearchProgress(1, 2, 100, 100), 100);
 assert.equal(calculateEggSearchProgress(0, 0, 50, 100), 0);
 assert.equal(calculateEggSearchProgress(0, 1, 150, 100), 100);
 
+assert.equal(formatEggSearchError(new Error("worker failed")), "worker failed");
+assert.equal(formatEggSearchError({ message: "wasm failed" }), "wasm failed");
+assert.equal(formatEggSearchError({ code: "OOM" }), '{"code":"OOM"}');
+
 const eggSeedSearchPhases = buildEggSeedSearchPhases([
-    { id: "extraA", settings: "mono_a_a_startup_select" },
-    { id: "noneA", settings: "mono_a_a_none" },
-    { id: "extraB", settings: "stereo_h_start_blackout_r" },
-    { id: "noneB", settings: "stereo_h_start_none" },
+    {
+        id: "extraA",
+        initialSeed: 0x10,
+        settings: "mono_a_a_startup_select",
+    },
+    { id: "noneA", initialSeed: 0x10, settings: "mono_a_a_none" },
+    {
+        id: "extraB",
+        initialSeed: 0x20,
+        settings: "stereo_h_start_blackout_r",
+    },
+    { id: "noneB", initialSeed: 0x10, settings: "stereo_h_start_none" },
 ]);
 assert.deepEqual(
     eggSeedSearchPhases.map((phase) => [
@@ -185,10 +205,85 @@ assert.deepEqual(
 );
 assert.deepEqual(
     buildEggSeedSearchPhases([
-        { id: "noneA", settings: "mono_a_a_none" },
+        { id: "noneA", initialSeed: 0x10, settings: "mono_a_a_none" },
     ]).map((phase) => [phase.pairOffset, phase.pairCount]),
     [[0, 1]]
 );
+assert.deepEqual(
+    buildEggSeedSearchPhases(
+        [
+            {
+                id: "extraA",
+                initialSeed: 0x10,
+                settings: "mono_a_a_startup_select",
+            },
+            { id: "noneA", initialSeed: 0x10, settings: "mono_a_a_none" },
+            {
+                id: "extraB",
+                initialSeed: 0x20,
+                settings: "stereo_h_start_blackout_r",
+            },
+            { id: "noneB", initialSeed: 0x10, settings: "stereo_h_start_none" },
+        ],
+        true
+    ).map((phase) => [phase.pairOffset, phase.pairCount]),
+    [
+        [0, 4],
+        [4, 2],
+        [6, 2],
+        [8, 2],
+    ]
+);
+assert.equal(
+    countMatchingInitialSeedPairs(
+        [
+            { initialSeed: 0x10 },
+            { initialSeed: 0x10 },
+            { initialSeed: 0x20 },
+        ],
+        [
+            { initialSeed: 0x10 },
+            { initialSeed: 0x20 },
+            { initialSeed: 0x20 },
+        ]
+    ),
+    4
+);
+assert.deepEqual(
+    skipEggSeedTableEntries(
+        [
+            { id: "a0", settings: "mono_h_a_none" },
+            { id: "a1", settings: "mono_h_a_none" },
+            { id: "b0", settings: "stereo_h_a_none" },
+            { id: "a2", settings: "mono_h_a_none" },
+            { id: "b1", settings: "stereo_h_a_none" },
+            { id: "b2", settings: "stereo_h_a_none" },
+        ],
+        2
+    ).map((seed) => seed.id),
+    ["a2", "b2"]
+);
+assert.deepEqual(
+    skipEggSeedTableEntries(
+        [{ id: "a0", settings: "mono_h_a_none" }],
+        0
+    ).map((seed) => seed.id),
+    ["a0"]
+);
+assert.equal(
+    getPreferredEggSeedSettings([
+        { settings: "stereo_h_start_blackout_r" },
+        { settings: "mono_h_a_none" },
+    ]),
+    "mono_h_a_none"
+);
+assert.equal(
+    getPreferredEggSeedSettings([
+        { settings: "stereo_h_start_blackout_r" },
+    ]),
+    "stereo_h_start_blackout_r"
+);
+assert.equal(getPreferredEggSeedSettings([]), null);
 
 assert.deepEqual(
     getSeedRangeAroundTarget(
@@ -230,6 +325,38 @@ assert.equal(
     1234
 );
 assert.deepEqual(eggSeedTimeCalls, [[100, "NX2"]]);
+assert.equal(
+    getEggSeedTimeOffset(1760, 1600, "NX2", (frame) => frame * 10),
+    100
+);
+assert.equal(
+    getEggSeedTimeOffset(1440, 1600, "NX2", (frame) => frame * 10),
+    -100
+);
+assert.deepEqual(
+    getEggCompareDeltas(
+        {
+            heldSeedTime: 1760,
+            pickupSeedTime: 1440,
+            heldAdvances: 1012,
+            pickupAdvances: 998,
+        },
+        {
+            heldSeedTime: 1600,
+            pickupSeedTime: 1600,
+            heldAdvances: 1000,
+            pickupAdvances: 1000,
+        },
+        "NX",
+        (frame) => frame * 10
+    ),
+    {
+        heldSeedTime: 100,
+        pickupSeedTime: -100,
+        heldAdvances: 12,
+        pickupAdvances: -2,
+    }
+);
 
 assert.equal(formatInheritanceSlot(0), "");
 assert.equal(formatInheritanceSlot(1), "A");

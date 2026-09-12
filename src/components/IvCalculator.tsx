@@ -2,7 +2,7 @@ import { TextField } from "@mui/material";
 import { useMemo, useState } from "react";
 import React from "react";
 import { useI18n } from "../i18n";
-import type { IVRange } from "../tenLines/generated";
+import type { IVRange } from "../tenLines/generated.d";
 
 const splitIvLine = (line: string) =>
     line

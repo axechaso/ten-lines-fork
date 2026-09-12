@@ -1,7 +1,10 @@
-import MainModuleFactory, { type MainModule } from "./generated";
+import type { MainModule } from "./generated.d";
+import GeneratedMainModuleFactory from "./generated/index-combined.js";
 import { expose } from "comlink";
 
 let main_module: MainModule;
+const MainModuleFactory =
+    GeneratedMainModuleFactory as unknown as () => Promise<MainModule>;
 
 MainModuleFactory()
     .then((module) => {

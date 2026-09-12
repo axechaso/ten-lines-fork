@@ -19,7 +19,7 @@ import type {
     ExtendedGeneratorState,
     ExtendedWildGeneratorState,
     FRLGContiguousSeedEntry,
-} from "../tenLines/generated";
+} from "../tenLines/generated.d";
 
 import type { CalibrationResultRow } from "./CalibrationComparePanel";
 
@@ -34,6 +34,7 @@ export type CalibrationTableColumn =
     | "pid"
     | "shiny"
     | "nature"
+    | "stats"
     | "ability"
     | "ivs"
     | "hidden"
@@ -51,6 +52,7 @@ export const CALIBRATION_TABLE_COLUMN_OPTIONS: CalibrationTableColumn[] = [
     "pid",
     "shiny",
     "nature",
+    "stats",
     "ability",
     "ivs",
     "hidden",
@@ -295,6 +297,12 @@ const CalibrationTable = memo(function CalibrationTable({
                                             return (
                                                 <TableCell key={`${absoluteIndex}-${column}`}>
                                                     {resources.natures[row.nature]}
+                                                </TableCell>
+                                            );
+                                        case "stats":
+                                            return (
+                                                <TableCell key={`${absoluteIndex}-${column}`}>
+                                                    {row.stats.join("/")}
                                                 </TableCell>
                                             );
                                         case "ability":

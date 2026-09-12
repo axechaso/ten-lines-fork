@@ -28,15 +28,24 @@ import {
     type EnumeratedStaticTemplate3,
     type ExtendedSearcherState,
     type ExtendedWildSearcherState,
-} from "../tenLines/generated";
+} from "../tenLines/generated.d";
 import React from "react";
 import { getAllGameOptions, getName, useI18n } from "../i18n";
 import IvEntry from "./IvEntry";
 import StaticEncounterSelector from "./StaticEncounterSelector";
 import { useSearchParams } from "react-router-dom";
 import WildEncounterSelector from "./WildEncounterSelector";
-import SearcherTable from "./SearcherTable";
+import SearcherTable, {
+    type SearcherCalibrationContext,
+} from "./SearcherTable";
 import { filterNatureOptions } from "../utils/natureSearch";
+import {
+    applyEggIvPreset,
+    type EggIvPresetValue,
+    FRLG_EGG_IV_PRESETS,
+} from "./frlgEggHelpers";
+
+type PerfectIvPreset = number | Exclude<EggIvPresetValue, "6v">;
 
 export interface SearcherFormState {
     shininess: number;
@@ -45,7 +54,7 @@ export interface SearcherFormState {
     hiddenPower: number;
     ivRangeStrings: [string, string][];
     usePerfectIvFilter: boolean;
-    perfectIvCount: number;
+    perfectIvPreset: PerfectIvPreset;
     staticCategory: number;
     staticPokemon: number;
     wildCategory: number;
@@ -122,12 +131,23 @@ const DEFAULT_IV_RANGE_STRINGS: [string, string][] = [
     ["0", "31"],
 ];
 
-function getPerfectIvRangeSets(perfectIvCount: number): [number, number][][] {
+function getPerfectIvRangeSets(
+    perfectIvPreset: PerfectIvPreset
+): [number, number][][] {
+    if (typeof perfectIvPreset !== "number") {
+        return [
+            applyEggIvPreset(perfectIvPreset).map(([minimum, maximum]) => [
+                parseInt(minimum, 10),
+                parseInt(maximum, 10),
+            ]),
+        ];
+    }
+
     const rangeSets: [number, number][][] = [];
     const currentSelection: number[] = [];
 
     const buildCombinations = (start: number) => {
-        if (currentSelection.length === perfectIvCount) {
+        if (currentSelection.length === perfectIvPreset) {
             rangeSets.push(
                 Array.from({ length: 6 }, (_, statIndex) =>
                     currentSelection.includes(statIndex) ? [31, 31] : [0, 30]
@@ -188,7 +208,7 @@ export default function CalibrationForm({
             hiddenPower: -1,
             ivRangeStrings: DEFAULT_IV_RANGE_STRINGS,
             usePerfectIvFilter: false,
-            perfectIvCount: 1,
+            perfectIvPreset: 1,
             staticCategory: 0,
             staticPokemon: 0,
             wildCategory: 0,
@@ -223,7 +243,7 @@ export default function CalibrationForm({
         ])
         : [];
     const submittedIvRanges = searcherFormState.usePerfectIvFilter
-        ? getPerfectIvRangeSets(searcherFormState.perfectIvCount)
+        ? getPerfectIvRangeSets(searcherFormState.perfectIvPreset)
         : [ivRanges];
 
     const [trainerIDIsValid, setTrainerIDIsValid] = useState(true);
@@ -281,6 +301,21 @@ export default function CalibrationForm({
         searcherFormState.natures.length === 0
             ? [-1]
             : searcherFormState.natures;
+    const calibrationContext: SearcherCalibrationContext = isStatic
+        ? {
+              method: searcherFormState.method,
+              isStatic: true,
+              staticCategory: searcherFormState.staticCategory,
+              staticPokemon: searcherFormState.staticPokemon,
+          }
+        : {
+              method: searcherFormState.method,
+              isStatic: false,
+              wildCategory: searcherFormState.wildCategory,
+              wildLocation: searcherFormState.wildLocation,
+              wildPokemon: searcherFormState.wildPokemon,
+              wildLead: searcherFormState.wildLead,
+          };
 
     useEffect(() => {
         if (!isStatic) {
@@ -795,16 +830,22 @@ export default function CalibrationForm({
             />
             {searcherFormState.usePerfectIvFilter ? (
                 <TextField
-                    label={t("labels.perfectIvCount")}
+                    label={t("labels.perfectIvPreset")}
                     margin="normal"
                     style={{ textAlign: "left" }}
                     onChange={(event) => {
+                        const value = event.target.value;
                         setSearcherFormState((data) => ({
                             ...data,
-                            perfectIvCount: parseInt(event.target.value, 10),
+                            perfectIvPreset:
+                                typeof value === "number"
+                                    ? value
+                                    : (/^\d+$/.test(value)
+                                          ? parseInt(value, 10)
+                                          : value) as PerfectIvPreset,
                         }));
                     }}
-                    value={searcherFormState.perfectIvCount}
+                    value={searcherFormState.perfectIvPreset}
                     select
                     fullWidth
                 >
@@ -815,6 +856,13 @@ export default function CalibrationForm({
                             </MenuItem>
                         )
                     )}
+                    {FRLG_EGG_IV_PRESETS.filter(
+                        (option) => option.value !== "6v"
+                    ).map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                            {t(option.labelKey)}
+                        </MenuItem>
+                    ))}
                 </TextField>
             ) : (
                 <IvEntry
@@ -845,6 +893,7 @@ export default function CalibrationForm({
                 }
                 showRequiredAdvances={isReachableAdvancesFilterEnabled}
                 compareTargetName={compareTargetName}
+                calibrationContext={calibrationContext}
             />
         </Box>
     );

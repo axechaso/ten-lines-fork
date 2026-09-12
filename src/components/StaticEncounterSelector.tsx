@@ -3,7 +3,7 @@ import React from "react";
 import { MenuItem, TextField } from "@mui/material";
 import { useI18n, getName } from "../i18n";
 import fetchTenLines, { Game } from "../tenLines";
-import type { EnumeratedStaticTemplate3 } from "../tenLines/generated";
+import type { EnumeratedStaticTemplate3 } from "../tenLines/generated.d";
 
 function StaticEncounterSelector({
     staticCategory,

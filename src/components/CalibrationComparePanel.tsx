@@ -22,7 +22,7 @@ import { frameToMS, hexSeed } from "../tenLines";
 import type {
     ExtendedGeneratorState,
     ExtendedWildGeneratorState,
-} from "../tenLines/generated";
+} from "../tenLines/generated.d";
 
 export type CalibrationResultRow =
     | ExtendedGeneratorState

@@ -205,7 +205,11 @@ function WildEncounterSelector({
                 <MenuItem value="8">{t("options.superRod")}</MenuItem>
             </TextField>
             <Autocomplete
-                options={getWildLocationOptions(wildLocations)}
+                options={
+                    wildLocations.length > 0
+                        ? getWildLocationOptions(wildLocations)
+                        : [0]
+                }
                 onChange={(_event, newValue) => {
                     onChange(
                         wildCategory,
@@ -216,11 +220,13 @@ function WildEncounterSelector({
                     );
                 }}
                 getOptionLabel={(option) =>
-                    getLocation(
-                        resources,
-                        game,
-                        getWildLocationId(wildLocations, option)
-                    ) || ""
+                    wildLocations.length === 0
+                        ? ""
+                        : getLocation(
+                              resources,
+                              game,
+                              getWildLocationId(wildLocations, option)
+                          ) || ""
                 }
                 renderInput={(params) => (
                     <TextField
@@ -241,13 +247,16 @@ function WildEncounterSelector({
                 value={
                     wildLocations.length > 0
                         ? normalizeWildLocationIndex(wildLocations, wildLocation)
-                        : undefined
+                        : 0
                 }
                 isOptionEqualToValue={(option, value) => option === value}
                 disablePortal
                 disableClearable
                 selectOnFocus
                 fullWidth
+                disabled={
+                    locationStatus !== "ready" || wildLocations.length === 0
+                }
                 loading={locationStatus === "loading"}
                 loadingText={t("common.loadingResources")}
                 noOptionsText={

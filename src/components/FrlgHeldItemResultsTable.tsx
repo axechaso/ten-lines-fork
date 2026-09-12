@@ -43,6 +43,11 @@ export interface FrlgHeldItemResultsTableProps {
     rows: ExtendedWildGeneratorState[];
     standardOffset: number;
     searchMode: FrlgHeldSearchMode;
+    game: string;
+    gameConsole: string;
+    encounterCategory: number;
+    encounterLocation: number;
+    encounterPokemon: number;
     calibrationSeedSettings: CalibrationSeedSettings;
 }
 
@@ -50,6 +55,11 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
     rows,
     standardOffset,
     searchMode,
+    game,
+    gameConsole,
+    encounterCategory,
+    encounterLocation,
+    encounterPokemon,
     calibrationSeedSettings,
 }: FrlgHeldItemResultsTableProps) {
     const { locale, t, resources } = useI18n();
@@ -100,6 +110,11 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
             params.set("buttonMode", calibrationSeedSettings.buttonMode);
             params.set("button", calibrationSeedSettings.button);
             params.set("heldButton", calibrationSeedSettings.heldButton);
+            setCalibrationContextParams(params, row);
+            params.set(
+                "calibrationTransfer",
+                `${row.initialSeed}-${row.advances}-${row.pid}-${Date.now()}`
+            );
             params.set("page", "1");
             if (isAuxClick) {
                 window.open(`?${params.toString()}`);
@@ -107,6 +122,52 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
             }
             return params;
         });
+    }
+
+    function openInInitialSeed(
+        row: ExtendedWildGeneratorState,
+        isAuxClick: boolean
+    ) {
+        setSearchParams((previous) => {
+            const params = new URLSearchParams(previous);
+            params.set(
+                "targetSeed",
+                hexSeed(
+                    advancePokeRng(row.initialSeed, row.advances),
+                    32
+                )
+            );
+            params.set("page", "0");
+            params.set("game", game);
+            params.set("gameConsole", gameConsole);
+            setCalibrationContextParams(params, row);
+            if (isAuxClick) {
+                window.open(`?${params.toString()}`);
+                return previous;
+            }
+            return params;
+        });
+    }
+
+    function setCalibrationContextParams(
+        params: URLSearchParams,
+        row: ExtendedWildGeneratorState
+    ) {
+        params.set("calibrationMethod", row.method.toString());
+        params.set(
+            "calibrationWildCategory",
+            encounterCategory.toString()
+        );
+        params.set(
+            "calibrationWildLocation",
+            encounterLocation.toString()
+        );
+        params.set(
+            "calibrationWildPokemon",
+            encounterPokemon.toString()
+        );
+        params.set("calibrationWildLead", "255");
+        params.set("calibrationFilterPokemon", "true");
     }
 
     return (
@@ -118,6 +179,7 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
                         <TableCell>{t("table.seed")}</TableCell>
                         <TableCell>{t("table.slot")}</TableCell>
                         <TableCell>{t("table.level")}</TableCell>
+                        <TableCell>{t("table.shiny")}</TableCell>
                         <TableCell>{t("table.heldItem")}</TableCell>
                         <TableCell>{t("table.heldRng")}</TableCell>
                         <TableCell>{t("table.pid")}</TableCell>
@@ -127,6 +189,9 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
                         <TableCell>{t("table.hidden")}</TableCell>
                         <TableCell>{t("table.power")}</TableCell>
                         <TableCell>{t("table.gender")}</TableCell>
+                        <TableCell>
+                            {t("table.openInInitialSeed")}
+                        </TableCell>
                         <TableCell>
                             {t("table.openInCalibration")}
                         </TableCell>
@@ -162,6 +227,9 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
                                     )}
                                 </TableCell>
                                 <TableCell>{row.level}</TableCell>
+                                <TableCell>
+                                    {resources.shininess[row.shiny]}
+                                </TableCell>
                                 <TableCell>
                                     <Box sx={{ whiteSpace: "nowrap" }}>
                                         {heldPrediction?.rolls.map((roll) => (
@@ -210,6 +278,23 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
                                 <TableCell>{row.hiddenPowerStrength}</TableCell>
                                 <TableCell>
                                     {resources.genders[row.gender]}
+                                </TableCell>
+                                <TableCell>
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={() =>
+                                            openInInitialSeed(row, false)
+                                        }
+                                        onMouseDown={(event) => {
+                                            if (event.button === 1) {
+                                                event.preventDefault();
+                                                openInInitialSeed(row, true);
+                                            }
+                                        }}
+                                    >
+                                        {t("table.initialSeed")}
+                                    </Button>
                                 </TableCell>
                                 <TableCell>
                                     <Button

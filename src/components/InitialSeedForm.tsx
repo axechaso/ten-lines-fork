@@ -11,7 +11,7 @@ import {
 import fetchTenLines, { fetchSeedData, fixGameConsole, hexSeed } from "../tenLines";
 import NumericalInput from "./NumericalInput";
 import InitialSeedTable from "./InitialSeedTable";
-import type { InitialSeedResult } from "../tenLines/generated";
+import type { InitialSeedResult } from "../tenLines/generated.d";
 import { useSearchParams } from "react-router-dom";
 import TeachyTVEntry from "./TeachyTVEntry";
 

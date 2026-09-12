@@ -4,7 +4,9 @@ import {
     Box,
     Button,
     createFilterOptions,
+    FormControlLabel,
     MenuItem,
+    Switch,
     TextField,
     Typography,
     type SxProps,
@@ -29,8 +31,17 @@ import type {
     FRLGContiguousSeedEntry,
 } from "../tenLines/generated";
 import {
-    FRLG_HELD_PROFILE_FIRE_RED_ENGLISH_SWEET_SCENT,
+    FRLG_HELD_ENCOUNTER_GOOD_ROD,
+    FRLG_HELD_ENCOUNTER_GRASS,
+    FRLG_HELD_ENCOUNTER_OLD_ROD,
+    FRLG_HELD_ENCOUNTER_ROCK_SMASH,
+    FRLG_HELD_ENCOUNTER_SUPER_ROD,
+    FRLG_HELD_ENCOUNTER_SURFING,
+    FRLG_HELD_PROFILE_ENGLISH_SWITCH,
     FRLG_HELD_SEARCH_MODE_ALL_METHODS,
+    FRLG_HELD_SEARCH_MODE_FIVE_TRACKS,
+    FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC,
+    FRLG_HELD_SEARCH_MODE_FOUR_TRACKS,
     FRLG_HELD_SEARCH_MODE_H1_STABLE,
     HELD_ITEM_FILTER_ANY,
     HELD_ITEM_FILTER_ANY_ITEM,
@@ -40,6 +51,7 @@ import {
     getFrlgHeldOffsetProfile,
     getFrlgHeldSearchOffsets,
     matchesFrlgHeldItemSearchFilter,
+    matchesFrlgHeldShinyFilter,
     predictFrlgHeldItemAtOffsets,
     type FrlgHeldSearchMode,
 } from "../utils/frlgHeldItems";
@@ -51,7 +63,6 @@ import FrlgHeldItemResultsTable from "./FrlgHeldItemResultsTable";
 import NumericalInput from "./NumericalInput";
 import RangeInput from "./RangeInput";
 
-const ENCOUNTER_CATEGORY = 0;
 const RESULT_LIMIT = 1000;
 const MAX_ADVANCES_PER_SEARCH = 100_000;
 const DEFAULT_ADVANCE_RANGE: [string, string] = ["1000", "100000"];
@@ -61,10 +72,45 @@ const UNFILTERED_IV_RANGES: [number, number][] = Array.from(
     { length: 6 },
     () => [0, 31] as [number, number]
 );
-const SEARCH_MODE_OPTIONS: FrlgHeldSearchMode[] = [
-    FRLG_HELD_SEARCH_MODE_H1_STABLE,
-    FRLG_HELD_SEARCH_MODE_ALL_METHODS,
+const SEARCH_MODE_OPTIONS: {
+    value: FrlgHeldSearchMode;
+    labelKey: string;
+    helpKey: string;
+}[] = [
+    {
+        value: FRLG_HELD_SEARCH_MODE_H1_STABLE,
+        labelKey: "heldItems.searchModeH1Stable",
+        helpKey: "heldItems.searchModeH1StableHelp",
+    },
+    {
+        value: FRLG_HELD_SEARCH_MODE_ALL_METHODS,
+        labelKey: "heldItems.searchModeAllMethods",
+        helpKey: "heldItems.searchModeAllMethodsHelp",
+    },
+    {
+        value: FRLG_HELD_SEARCH_MODE_FOUR_TRACKS,
+        labelKey: "heldItems.searchModeFourTracks",
+        helpKey: "heldItems.searchModeFourTracksHelp",
+    },
+    {
+        value: FRLG_HELD_SEARCH_MODE_FIVE_TRACKS,
+        labelKey: "heldItems.searchModeFiveTracks",
+        helpKey: "heldItems.searchModeFiveTracksHelp",
+    },
+    {
+        value: FRLG_HELD_SEARCH_MODE_FIVE_TRACKS_SYMMETRIC,
+        labelKey: "heldItems.searchModeFiveTracksSymmetric",
+        helpKey: "heldItems.searchModeFiveTracksSymmetricHelp",
+    },
 ];
+const ENCOUNTER_CATEGORY_OPTIONS = [
+    { value: FRLG_HELD_ENCOUNTER_GRASS, labelKey: "options.grass" },
+    { value: FRLG_HELD_ENCOUNTER_ROCK_SMASH, labelKey: "options.rockSmash" },
+    { value: FRLG_HELD_ENCOUNTER_SURFING, labelKey: "options.surfing" },
+    { value: FRLG_HELD_ENCOUNTER_OLD_ROD, labelKey: "options.oldRod" },
+    { value: FRLG_HELD_ENCOUNTER_GOOD_ROD, labelKey: "options.goodRod" },
+    { value: FRLG_HELD_ENCOUNTER_SUPER_ROD, labelKey: "options.superRod" },
+] as const;
 const targetSeedFilterOptions = createFilterOptions<FRLGContiguousSeedEntry>({
     limit: 100,
     stringify: (option) => hexSeed(option.initialSeed, 16),
@@ -78,6 +124,8 @@ interface HeldSeedURLState {
     heldButton: string;
     gameConsole: string;
     targetInitialSeed: string;
+    trainerID: string;
+    secretID: string;
 }
 
 const HELD_SEED_QUERY_KEYS: Record<keyof HeldSeedURLState, string> = {
@@ -88,6 +136,8 @@ const HELD_SEED_QUERY_KEYS: Record<keyof HeldSeedURLState, string> = {
     heldButton: "heldSeedExtraButton",
     gameConsole: "gameConsole",
     targetInitialSeed: "heldTargetInitialSeed",
+    trainerID: "trainerID",
+    secretID: "secretID",
 };
 
 function useHeldSeedURLState() {
@@ -116,6 +166,8 @@ function useHeldSeedURLState() {
         game,
         requestedGameConsole || (isSwitch ? "NX" : "GBA")
     );
+    const trainerID = searchParams.get(HELD_SEED_QUERY_KEYS.trainerID) || "0";
+    const secretID = searchParams.get(HELD_SEED_QUERY_KEYS.secretID) || "0";
     const sharedGameNeedsNormalization =
         requestedGameParam !== game ||
         requestedGameConsole !== gameConsole;
@@ -152,6 +204,8 @@ function useHeldSeedURLState() {
         heldButton,
         gameConsole,
         targetSeedValue,
+        trainerID,
+        secretID,
         setHeldSeedURLState,
     };
 }
@@ -177,6 +231,8 @@ export default function FrlgHeldItemSearcherPage({
         heldButton,
         gameConsole,
         targetSeedValue,
+        trainerID,
+        secretID,
         setHeldSeedURLState,
     } = useHeldSeedURLState();
     const [seedList, setSeedList] = useState<FRLGContiguousSeedEntry[]>([]);
@@ -190,6 +246,16 @@ export default function FrlgHeldItemSearcherPage({
     const [advanceRangeIsValid, setAdvanceRangeIsValid] = useState(true);
     const [searchMode, setSearchMode] = useState<FrlgHeldSearchMode>(
         FRLG_HELD_SEARCH_MODE_H1_STABLE
+    );
+    const selectedSearchMode =
+        SEARCH_MODE_OPTIONS.find((option) => option.value === searchMode) ??
+        SEARCH_MODE_OPTIONS[0];
+    const [shinyOnlyMode, setShinyOnlyMode] = useState(false);
+    const [shinyFilter, setShinyFilter] = useState(1);
+    const [trainerIDIsValid, setTrainerIDIsValid] = useState(true);
+    const [secretIDIsValid, setSecretIDIsValid] = useState(true);
+    const [encounterCategory, setEncounterCategory] = useState(
+        FRLG_HELD_ENCOUNTER_GRASS
     );
     const [selection, setSelection] =
         useState<FrlgHeldEncounterSelection>();
@@ -351,27 +417,37 @@ export default function FrlgHeldItemSearcherPage({
     const advanceSearchSpaceTooLarge =
         advanceCount > MAX_ADVANCES_PER_SEARCH;
     const advanceSignature = advanceRangeStrings.join(":");
+    const heldItemFilterSignature = shinyOnlyMode
+        ? undefined
+        : `${searchMode}:${standardOffset}`;
+    const shinyLibrarySize = seedList.length;
+    const shinyTotalFrames = shinyOnlyMode
+        ? shinyLibrarySize * advanceCount
+        : 0;
 
     const presetProfile = useMemo(
         () =>
             selection
                 ? getFrlgHeldOffsetProfile(
-                      FRLG_HELD_PROFILE_FIRE_RED_ENGLISH_SWEET_SCENT,
+                      FRLG_HELD_PROFILE_ENGLISH_SWITCH,
                       encounterGame,
-                      ENCOUNTER_CATEGORY,
+                      encounterCategory,
                       selection.locationId,
                       WILD_1
                   )
                 : undefined,
-        [encounterGame, selection]
+        [encounterCategory, encounterGame, selection]
     );
     const standardOffsetValue = parseInt(standardOffset, 10);
+    const trainerIdValue = parseInt(trainerID, 10);
+    const secretIdValue = parseInt(secretID, 10);
     const searchOffsets = getFrlgHeldSearchOffsets(
         standardOffsetValue,
         searchMode
     );
     const hasUsableOffset =
-        standardOffsetIsValid && searchOffsets.length > 0;
+        shinyOnlyMode ||
+        (standardOffsetIsValid && searchOffsets.length > 0);
     const slots = selection
         ? getFrlgHeldItemSlots(selection.speciesForm & 0x7ff)
         : undefined;
@@ -392,8 +468,10 @@ export default function FrlgHeldItemSearcherPage({
         setSearchError(undefined);
         setSearching(false);
     }, [
-        hidden,
-        searchMode,
+        heldItemFilterSignature,
+        shinyOnlyMode,
+        shinyFilter,
+        encounterCategory,
         selection,
         heldItemFilter,
         targetSeedValue,
@@ -403,7 +481,8 @@ export default function FrlgHeldItemSearcherPage({
         button,
         heldButton,
         advanceSignature,
-        standardOffset,
+        trainerID,
+        secretID,
     ]);
 
     useEffect(() => {
@@ -430,8 +509,11 @@ export default function FrlgHeldItemSearcherPage({
             !selection ||
             seedListLoading ||
             !!seedListError ||
-            !targetSeedIsValid ||
-            !targetSeed ||
+            !trainerIDIsValid ||
+            !secretIDIsValid ||
+            (shinyOnlyMode
+                ? seedList.length === 0
+                : !targetSeedIsValid || !targetSeed) ||
             !advanceRangeIsValid ||
             advanceSearchSpaceTooLarge ||
             !hasUsableOffset
@@ -449,23 +531,27 @@ export default function FrlgHeldItemSearcherPage({
         const search = async () => {
             try {
                 const tenLines = await fetchTenLines();
-                const seeds: FRLGContiguousSeedEntry[] = [
-                    {
-                        ...targetSeed,
-                        settings:
-                            targetSeed.settings ??
-                            `${sound}_${buttonMode}_${button}`,
-                    },
-                ];
-                await tenLines.check_seeds_wild(
+                const seeds: FRLGContiguousSeedEntry[] = shinyOnlyMode
+                    ? seedList
+                    : targetSeed
+                      ? [
+                            {
+                                ...targetSeed,
+                                settings:
+                                    targetSeed.settings ??
+                                    `${sound}_${buttonMode}_${button}`,
+                            },
+                        ]
+                      : [];
+                await tenLines.check_seeds_wild_limited(
                     seeds,
                     advanceRange,
                     [0, 0],
                     0,
                     encounterGame,
-                    0,
-                    0,
-                    ENCOUNTER_CATEGORY,
+                    trainerIdValue,
+                    secretIdValue,
+                    encounterCategory,
                     selection.locationIndex,
                     selection.speciesForm,
                     WILD_1,
@@ -474,12 +560,20 @@ export default function FrlgHeldItemSearcherPage({
                     -1,
                     255,
                     UNFILTERED_IV_RANGES,
+                    shinyOnlyMode ? shinyFilter : 255,
+                    shinyOnlyMode ? RESULT_LIMIT : 0,
                     proxy((results: ExtendedWildGeneratorState[]) => {
                         if (requestIdRef.current !== requestId) {
                             return;
                         }
 
                         const matchingRows = results.filter((row) => {
+                            if (shinyOnlyMode) {
+                                return matchesFrlgHeldShinyFilter(
+                                    row,
+                                    shinyFilter
+                                );
+                            }
                             const prediction = predictFrlgHeldItemAtOffsets({
                                 species: row.species,
                                 iv2EndSeed: row.iv2EndSeed,
@@ -670,6 +764,7 @@ export default function FrlgHeldItemSearcherPage({
                     </MenuItem>
                 ))}
             </TextField>
+            {!shinyOnlyMode && (
             <Autocomplete
                 freeSolo
                 options={seedList}
@@ -751,6 +846,7 @@ export default function FrlgHeldItemSearcherPage({
                 fullWidth
                 disabled={searching}
             />
+            )}
             <RangeInput
                 label={t("labels.advances")}
                 name="heldAdvanceRange"
@@ -784,27 +880,139 @@ export default function FrlgHeldItemSearcherPage({
                 disabled={searching}
             >
                 {SEARCH_MODE_OPTIONS.map((modeOption) => (
-                    <MenuItem key={modeOption} value={modeOption}>
-                        {t(
-                            modeOption === FRLG_HELD_SEARCH_MODE_H1_STABLE
-                                ? "heldItems.searchModeH1Stable"
-                                : "heldItems.searchModeAllMethods"
-                        )}
+                    <MenuItem key={modeOption.value} value={modeOption.value}>
+                        {t(modeOption.labelKey)}
                     </MenuItem>
                 ))}
             </TextField>
             <Alert severity="info" sx={{ my: 1, textAlign: "left" }}>
-                {t(
-                    searchMode === FRLG_HELD_SEARCH_MODE_H1_STABLE
-                        ? "heldItems.searchModeH1StableHelp"
-                        : "heldItems.searchModeAllMethodsHelp"
+                {t(selectedSearchMode.helpKey)}
+                {shinyOnlyMode && (
+                    <Typography component="div" sx={{ mt: 1 }}>
+                        {t("heldItems.searchModeShinyHelp")}
+                    </Typography>
                 )}
             </Alert>
+
+            <FormControlLabel
+                control={
+                    <Switch
+                        checked={shinyOnlyMode}
+                        onChange={(event) =>
+                            setShinyOnlyMode(event.target.checked)
+                        }
+                        disabled={searching}
+                    />
+                }
+                label={t("heldItems.shinyOnlyMode")}
+                sx={{ my: 1 }}
+            />
+
+            {shinyOnlyMode && (
+                <>
+                    <Alert severity="info" sx={{ my: 1, textAlign: "left" }}>
+                        {t("heldItems.shinyOnlyModeHelp", {
+                            count: seedList.length.toLocaleString(),
+                            limit: RESULT_LIMIT.toLocaleString(),
+                        })}
+                    </Alert>
+                    {!advanceSearchSpaceTooLarge &&
+                        shinyTotalFrames > 0 && (
+                            <Alert
+                                severity="warning"
+                                sx={{ my: 1, textAlign: "left" }}
+                            >
+                                {t("heldItems.shinySearchWorkload", {
+                                    frames:
+                                        shinyTotalFrames.toLocaleString(),
+                                    seeds: shinyLibrarySize.toLocaleString(),
+                                    advances:
+                                        advanceCount.toLocaleString(),
+                                })}
+                            </Alert>
+                        )}
+                    <Box sx={{ flexDirection: "row", display: "flex" }}>
+                        <NumericalInput
+                            label={t("labels.trainerId")}
+                            margin="normal"
+                            name="trainerID"
+                            minimumValue={0}
+                            maximumValue={65535}
+                            isHex={false}
+                            value={trainerID}
+                            disabled={searching}
+                            onChange={(_event, value) => {
+                                setHeldSeedURLState({
+                                    trainerID: value.value,
+                                });
+                                setTrainerIDIsValid(value.isValid);
+                            }}
+                        />
+                        <span
+                            style={{
+                                margin: "0 10px",
+                                alignSelf: "center",
+                            }}
+                        >
+                            /
+                        </span>
+                        <NumericalInput
+                            label={t("labels.secretId")}
+                            margin="normal"
+                            name="secretID"
+                            minimumValue={0}
+                            maximumValue={65535}
+                            isHex={false}
+                            value={secretID}
+                            disabled={searching}
+                            onChange={(_event, value) => {
+                                setHeldSeedURLState({
+                                    secretID: value.value,
+                                });
+                                setSecretIDIsValid(value.isValid);
+                            }}
+                        />
+                    </Box>
+                    <TextField
+                        label={t("heldItems.shinyFilter")}
+                        margin="normal"
+                        value={shinyFilter}
+                        onChange={(event) =>
+                            setShinyFilter(Number(event.target.value))
+                        }
+                        select
+                        fullWidth
+                        disabled={searching}
+                    >
+                        <MenuItem value={1}>{t("options.yes")}</MenuItem>
+                        <MenuItem value={0}>{t("options.no")}</MenuItem>
+                    </TextField>
+                </>
+            )}
+
+            <TextField
+                label={t("labels.category")}
+                margin="normal"
+                value={encounterCategory}
+                onChange={(event) =>
+                    setEncounterCategory(Number(event.target.value))
+                }
+                select
+                fullWidth
+                disabled={searching}
+            >
+                {ENCOUNTER_CATEGORY_OPTIONS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                        {t(option.labelKey)}
+                    </MenuItem>
+                ))}
+            </TextField>
 
             <FrlgHeldEncounterSelector
                 active={!hidden}
                 disabled={searching}
                 game={encounterGame}
+                encounterCategory={encounterCategory}
                 value={selection}
                 onChange={setSelection}
             />
@@ -837,45 +1045,46 @@ export default function FrlgHeldItemSearcherPage({
 
             {selection && (
                 <FrlgHeldItemNotice
-                    profileSet={
-                        FRLG_HELD_PROFILE_FIRE_RED_ENGLISH_SWEET_SCENT
-                    }
+                    profileSet={FRLG_HELD_PROFILE_ENGLISH_SWITCH}
                     game={encounterGame}
-                    encounterCategory={ENCOUNTER_CATEGORY}
+                    encounterCategory={encounterCategory}
                     location={selection.locationId}
                     method={WILD_1}
                     species={selection.speciesForm}
                 />
             )}
 
-            <TextField
-                label={t("heldItems.filter")}
-                margin="normal"
-                value={heldItemFilter}
-                onChange={(event) =>
-                    setHeldItemFilter(Number(event.target.value))
-                }
-                select
-                fullWidth
-                disabled={searching || !selection || !hasUsableOffset}
-                helperText={
-                    selection && !hasUsableOffset
-                        ? t("heldItems.offsetRequired")
-                        : undefined
-                }
-            >
-                <MenuItem value={HELD_ITEM_FILTER_ANY}>
-                    {t("heldItems.filterAny")}
-                </MenuItem>
-                <MenuItem value={HELD_ITEM_FILTER_ANY_ITEM}>
-                    {t("heldItems.filterAnyItem")}
-                </MenuItem>
-                {itemOptions.map(({ itemId, percent }) => (
-                    <MenuItem key={itemId} value={itemId}>
-                        {getFrlgHeldItemName(locale, itemId)} ({percent}%)
-                    </MenuItem>
-                ))}
-            </TextField>
+            {!shinyOnlyMode && (
+                    <TextField
+                        label={t("heldItems.filter")}
+                        margin="normal"
+                        value={heldItemFilter}
+                        onChange={(event) =>
+                            setHeldItemFilter(Number(event.target.value))
+                        }
+                        select
+                        fullWidth
+                        disabled={searching || !selection || !hasUsableOffset}
+                        helperText={
+                            selection && !hasUsableOffset
+                                ? t("heldItems.offsetRequired")
+                                : undefined
+                        }
+                    >
+                        <MenuItem value={HELD_ITEM_FILTER_ANY}>
+                            {t("heldItems.filterAny")}
+                        </MenuItem>
+                        <MenuItem value={HELD_ITEM_FILTER_ANY_ITEM}>
+                            {t("heldItems.filterAnyItem")}
+                        </MenuItem>
+                        {itemOptions.map(({ itemId, percent }) => (
+                            <MenuItem key={itemId} value={itemId}>
+                                {getFrlgHeldItemName(locale, itemId)} (
+                                {percent}%)
+                            </MenuItem>
+                        ))}
+                    </TextField>
+            )}
 
             <Button
                 type="submit"
@@ -887,8 +1096,9 @@ export default function FrlgHeldItemSearcherPage({
                     !selection ||
                     seedListLoading ||
                     !!seedListError ||
-                    !targetSeedIsValid ||
-                    !targetSeed ||
+                    (shinyOnlyMode
+                        ? seedList.length === 0
+                        : !targetSeedIsValid || !targetSeed) ||
                     !advanceRangeIsValid ||
                     advanceSearchSpaceTooLarge ||
                     !hasUsableOffset
@@ -904,7 +1114,11 @@ export default function FrlgHeldItemSearcherPage({
             )}
             {hasSearched && !searching && rows.length === 0 && !searchError && (
                 <Alert severity="warning" sx={{ mb: 2 }}>
-                    {t("heldItems.noResults")}
+                    {t(
+                        shinyOnlyMode
+                            ? "heldItems.noResultsShiny"
+                            : "heldItems.noResults"
+                    )}
                 </Alert>
             )}
             {rows.length > 0 && selection && (
@@ -919,6 +1133,11 @@ export default function FrlgHeldItemSearcherPage({
                         rows={rows}
                         standardOffset={standardOffsetValue}
                         searchMode={searchMode}
+                        game={game}
+                        gameConsole={gameConsole}
+                        encounterCategory={encounterCategory}
+                        encounterLocation={selection.locationIndex}
+                        encounterPokemon={selection.speciesForm}
                         calibrationSeedSettings={{
                             sound,
                             buttonMode,
