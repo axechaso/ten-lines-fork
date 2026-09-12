@@ -35,11 +35,15 @@ export const HELD_ITEM_FILTER_ANY = -2;
 export const HELD_ITEM_FILTER_ANY_ITEM = -1;
 export const FRLG_HELD_SEARCH_MODE_H1_STABLE = "h1-stable";
 export const FRLG_HELD_SEARCH_MODE_ALL_METHODS = "all-methods";
+export const FRLG_HELD_SEARCH_MODE_FOUR_TRACKS = "four-tracks";
+export const FRLG_HELD_SEARCH_MODE_FIVE_TRACKS = "five-tracks";
 const FRLG_MAX_NATIONAL_DEX_SPECIES = 386;
 
 export type FrlgHeldSearchMode =
     | typeof FRLG_HELD_SEARCH_MODE_H1_STABLE
-    | typeof FRLG_HELD_SEARCH_MODE_ALL_METHODS;
+    | typeof FRLG_HELD_SEARCH_MODE_ALL_METHODS
+    | typeof FRLG_HELD_SEARCH_MODE_FOUR_TRACKS
+    | typeof FRLG_HELD_SEARCH_MODE_FIVE_TRACKS;
 
 export type FrlgHeldItemSlots = {
     common: number;
@@ -399,9 +403,31 @@ export function getFrlgHeldSearchOffsets(
     if (!Number.isInteger(h1StandardOffset) || h1StandardOffset <= 0) {
         return [];
     }
-    return searchMode === FRLG_HELD_SEARCH_MODE_ALL_METHODS
-        ? [h1StandardOffset - 1, h1StandardOffset, h1StandardOffset + 1]
-        : [h1StandardOffset, h1StandardOffset + 1];
+    if (searchMode === FRLG_HELD_SEARCH_MODE_FIVE_TRACKS) {
+        return [
+            h1StandardOffset - 1,
+            h1StandardOffset,
+            h1StandardOffset + 1,
+            h1StandardOffset + 2,
+            h1StandardOffset + 3,
+        ];
+    }
+    if (searchMode === FRLG_HELD_SEARCH_MODE_FOUR_TRACKS) {
+        return [
+            h1StandardOffset - 1,
+            h1StandardOffset,
+            h1StandardOffset + 1,
+            h1StandardOffset + 2,
+        ];
+    }
+    if (searchMode === FRLG_HELD_SEARCH_MODE_ALL_METHODS) {
+        return [
+            h1StandardOffset - 1,
+            h1StandardOffset,
+            h1StandardOffset + 1,
+        ];
+    }
+    return [h1StandardOffset, h1StandardOffset + 1];
 }
 
 export function predictFrlgHeldItemAtOffsets({

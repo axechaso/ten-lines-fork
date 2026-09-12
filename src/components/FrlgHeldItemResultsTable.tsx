@@ -43,7 +43,6 @@ export interface FrlgHeldItemResultsTableProps {
     rows: ExtendedWildGeneratorState[];
     standardOffset: number;
     searchMode: FrlgHeldSearchMode;
-    shinyOnly?: boolean;
     game: string;
     gameConsole: string;
     encounterCategory: number;
@@ -56,7 +55,6 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
     rows,
     standardOffset,
     searchMode,
-    shinyOnly = false,
     game,
     gameConsole,
     encounterCategory,
@@ -182,12 +180,8 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
                         <TableCell>{t("table.slot")}</TableCell>
                         <TableCell>{t("table.level")}</TableCell>
                         <TableCell>{t("table.shiny")}</TableCell>
-                        {!shinyOnly && (
-                            <>
-                                <TableCell>{t("table.heldItem")}</TableCell>
-                                <TableCell>{t("table.heldRng")}</TableCell>
-                            </>
-                        )}
+                        <TableCell>{t("table.heldItem")}</TableCell>
+                        <TableCell>{t("table.heldRng")}</TableCell>
                         <TableCell>{t("table.pid")}</TableCell>
                         <TableCell>{t("table.nature")}</TableCell>
                         <TableCell>{t("table.ability")}</TableCell>
@@ -236,8 +230,6 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
                                 <TableCell>
                                     {resources.shininess[row.shiny]}
                                 </TableCell>
-                                {!shinyOnly && (
-                                    <>
                                 <TableCell>
                                     <Box sx={{ whiteSpace: "nowrap" }}>
                                         {heldPrediction?.rolls.map((roll) => (
@@ -270,8 +262,6 @@ const FrlgHeldItemResultsTable = memo(function FrlgHeldItemResultsTable({
                                         )) ?? "—"}
                                     </Box>
                                 </TableCell>
-                                    </>
-                                )}
                                 <TableCell>{hexSeed(row.pid, 32)}</TableCell>
                                 <TableCell>
                                     {resources.natures[row.nature]}

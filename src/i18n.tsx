@@ -472,10 +472,20 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             searchMode: "Search mode",
             searchModeH1Stable: "H1 stable (O / O+1)",
             searchModeAllMethods: "H1/H2/H4 coverage (O-1 / O / O+1)",
+            searchModeFourTracks:
+                "Four-track coverage: O-1 / O / O+1 / O+2",
+            searchModeFiveTracks:
+                "Five-track coverage: O-1 / O / O+1 / O+2 / O+3",
             searchModeH1StableHelp:
-                "Generates H1 frames and keeps a target only when both the standard H1 offset O and its possible +1 path O+1 match the selected held item.",
+                "Uses the standard H1 offset O and its possible +1 path O+1. During held-item filtering, both tracks must match the selected item.",
             searchModeAllMethodsHelp:
-                "Generates H1 frames and keeps a target only when O-1, O, and O+1 all match. This covers the observed H2/H4 = H1-1 rule and the possible +1 path.",
+                "Uses O-1, O, and O+1 to cover the observed H2/H4 = H1-1 rule and the possible +1 path. During held-item filtering, all three tracks must match.",
+            searchModeFourTracksHelp:
+                "Uses O-1, O, O+1, and O+2 for wider adjacent-path coverage. During held-item filtering, all four tracks must match.",
+            searchModeFiveTracksHelp:
+                "Uses O-1, O, O+1, O+2, and O+3 for the widest adjacent-path coverage. During held-item filtering, all five tracks must match.",
+            searchModeShinyHelp:
+                "In shiny + frame range mode, this selection controls the held-item tracks shown in results but does not filter any result.",
             standardOffset: "H1 standard Offset (O)",
             offsetPresetAvailable:
                 "Preset H1 Offset: +{offset}. This mode checks {offsets}; you may edit the preset.",
@@ -507,7 +517,7 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             resultCount: "Showing {count} results (up to {limit}).",
             shinyOnlyMode: "Shiny + frame range mode",
             shinyOnlyModeHelp:
-                "Searches the entire seed library ({count} seeds) and filters only by shiny status and the Advance range based on the entered TID/SID. Held-item and Offset checks are skipped. WASM stops after {limit} matching results.",
+                "Searches the entire seed library ({count} seeds) and filters only by shiny status and the Advance range based on the entered TID/SID. The selected Offset coverage is display-only. WASM stops after {limit} matching results.",
             shinyFilter: "Shiny filter",
             noResultsShiny: "No matching shiny results were found.",
             shinySearchWorkload:
@@ -1004,10 +1014,20 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
             searchModeH1Stable: "H1 \u7a33\u5b9a\uff08O / O+1\uff09",
             searchModeAllMethods:
                 "H1/H2/H4 \u5168\u8986\u76d6\uff08O-1 / O / O+1\uff09",
+            searchModeFourTracks:
+                "\u56db\u8f68\u5e7f\u8986\u76d6\uff1aO-1 / O / O+1 / O+2",
+            searchModeFiveTracks:
+                "\u4e94\u8f68\u5e7f\u8986\u76d6\uff1aO-1 / O / O+1 / O+2 / O+3",
             searchModeH1StableHelp:
-                "\u751f\u6210 H1 \u5e27\uff1b\u53ea\u4fdd\u7559 H1 \u6807\u51c6 O \u4e0e\u53ef\u80fd\u7684 +1 \u8f68\u8ff9 O+1 \u90fd\u7b26\u5408\u6240\u9009\u643a\u5e26\u7269\u7684\u76ee\u6807\u3002",
+                "\u4f7f\u7528 H1 \u6807\u51c6 O \u4e0e\u53ef\u80fd\u7684 +1 \u8f68\u8ff9 O+1\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u4e24\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u6240\u9009\u9053\u5177\u3002",
             searchModeAllMethodsHelp:
-                "\u751f\u6210 H1 \u5e27\uff1b\u53ea\u4fdd\u7559 O-1\u3001O\u3001O+1 \u5168\u90e8\u7b26\u5408\u7684\u76ee\u6807\u3002\u8fd9\u8986\u76d6\u5df2\u89c2\u5bdf\u5230\u7684 H2/H4 = H1-1 \u89c4\u5219\u53ca\u5176 +1 \u8f68\u8ff9\u3002",
+                "\u4f7f\u7528 O-1\u3001O\u3001O+1 \u8986\u76d6\u5df2\u89c2\u5bdf\u5230\u7684 H2/H4 = H1-1 \u89c4\u5219\u53ca\u5176 +1 \u8f68\u8ff9\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u4e09\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u3002",
+            searchModeFourTracksHelp:
+                "\u4f7f\u7528 O-1\u3001O\u3001O+1\u3001O+2 \u6269\u5927\u76f8\u90bb\u8f68\u8ff9\u8986\u76d6\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u56db\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u3002",
+            searchModeFiveTracksHelp:
+                "\u4f7f\u7528 O-1\u3001O\u3001O+1\u3001O+2\u3001O+3 \u6269\u5927\u76f8\u90bb\u8f68\u8ff9\u8986\u76d6\u3002\u8fdb\u884c\u643a\u5e26\u7269\u7b5b\u9009\u65f6\uff0c\u4e94\u8f68\u90fd\u5fc5\u987b\u7b26\u5408\u3002",
+            searchModeShinyHelp:
+                "\u5728\u95ea\u5149 + \u5e27\u6570\u8303\u56f4\u6a21\u5f0f\u4e0b\uff0c\u8be5\u9009\u62e9\u53ea\u63a7\u5236\u7ed3\u679c\u4e2d\u663e\u793a\u7684\u643a\u5e26\u7269\u8f68\u8ff9\uff0c\u4e0d\u7b5b\u6389\u4efb\u4f55\u7ed3\u679c\u3002",
             standardOffset: "H1 \u6807\u51c6 Offset\uff08O\uff09",
             offsetPresetAvailable:
                 "\u5df2\u5957\u7528 H1 Offset \u9884\u8bbe +{offset}\u3002\u5f53\u524d\u6a21\u5f0f\u68c0\u67e5 {offsets}\uff1b\u4ecd\u53ef\u624b\u52a8\u4fee\u6539\u3002",
@@ -1039,7 +1059,7 @@ const TRANSLATIONS: Record<Locale, TranslationValue> = {
                 "\u5f53\u524d\u663e\u793a {count} \u6761\u7ed3\u679c\uff08\u6700\u591a {limit} \u6761\uff09\u3002",
             shinyOnlyMode: "\u95ea\u5149\u0020\u002b\u0020\u5e27\u6570\u8303\u56f4\u6a21\u5f0f",
             shinyOnlyModeHelp:
-                "\u641c\u7d22\u6574\u4e2a\u0020seed\u0020\u5e93\uff08\u5171\u0020{count}\u0020\u6761\uff09\uff0c\u53ea\u6309\u95ea\u5149\u72b6\u6001\u4e0e\u0020Advance\uff08\u5e27\u6570\uff09\u8303\u56f4\u7b5b\u9009\uff1b\u8df3\u8fc7\u643a\u5e26\u7269\u4e0e\u0020Offset\u0020\u5224\u5b9a\u3002WASM\u0020\u5728\u6536\u96c6\u5230\u0020{limit}\u0020\u6761\u5339\u914d\u7ed3\u679c\u540e\u7acb\u5373\u505c\u6b62\u3002",
+                "\u641c\u7d22\u6574\u4e2a\u0020seed\u0020\u5e93\uff08\u5171\u0020{count}\u0020\u6761\uff09\uff0c\u53ea\u6309\u95ea\u5149\u72b6\u6001\u4e0e\u0020Advance\uff08\u5e27\u6570\uff09\u8303\u56f4\u7b5b\u9009\uff1b\u6240\u9009\u0020Offset\u0020\u8986\u76d6\u4ec5\u7528\u4e8e\u7ed3\u679c\u5c55\u793a\u3002WASM\u0020\u5728\u6536\u96c6\u5230\u0020{limit}\u0020\u6761\u5339\u914d\u7ed3\u679c\u540e\u7acb\u5373\u505c\u6b62\u3002",
             shinyFilter: "\u95ea\u5149\u7b5b\u9009",
             noResultsShiny:
                 "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u95ea\u5149\u7ed3\u679c\u3002",
